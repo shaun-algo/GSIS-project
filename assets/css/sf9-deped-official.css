@@ -1,0 +1,669 @@
+/* Official DepEd SF9 (School Form 9) Template - Exact Match
+   Based on Department of Education Philippines official SF9 format
+   Two-page layout: Front/Back Page and Main Report Card Page */
+
+:root {
+    --deped-navy: #003366;
+    --deped-blue: #0066cc;
+    --deped-black: #000000;
+    --deped-gray: #333333;
+    --border-black: 1px solid #000;
+    --font-size-small: 10px;
+    --font-size-normal: 11px;
+    --font-size-medium: 12px;
+    --font-size-large: 14px;
+    --font-size-header: 16px;
+}
+
+/* SF9 Print Container */
+.sf9-deped-container {
+    background: #fff;
+    color: #000;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: var(--font-size-normal);
+    line-height: 1.2;
+}
+
+/* SF9 Page Layout - Letter Size */
+.sf9-deped-page {
+    background: #fff;
+    color: #000;
+    width: 8.5in;
+    height: 11in;
+    margin: 0 auto;
+    padding: 0.25in;
+    position: relative;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: var(--font-size-normal);
+    line-height: 1.2;
+}
+
+/* Page 1: Front/Back Page Layout */
+.sf9-page1 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.1in;
+    height: 100%;
+}
+
+/* Left Side - Attendance and Transfer Sections */
+.sf9-left-column {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1in;
+}
+
+/* Right Side - Student Info and School Header */
+.sf9-right-column {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1in;
+}
+
+/* DepEd Header */
+.sf9-deped-header {
+    text-align: center;
+    font-weight: bold;
+    margin-bottom: 0.1in;
+}
+
+.sf9-deped-header .republic {
+    font-size: var(--font-size-medium);
+    text-transform: uppercase;
+}
+
+.sf9-deped-header .department {
+    font-size: var(--font-size-medium);
+    text-transform: uppercase;
+}
+
+.sf9-deped-header .region {
+    font-size: var(--font-size-normal);
+    text-transform: uppercase;
+}
+
+.sf9-deped-header .division {
+    font-size: var(--font-size-normal);
+    text-transform: uppercase;
+}
+
+.sf9-deped-header .school-name {
+    font-size: var(--font-size-large);
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+/* SF9-SHS Header */
+.sf9-shs-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.15in;
+}
+
+.sf9-shs-header .sf9-label {
+    font-size: var(--font-size-header);
+    font-weight: bold;
+}
+
+.sf9-shs-header .lrn-label {
+    font-size: var(--font-size-medium);
+    font-weight: bold;
+}
+
+.sf9-shs-header .lrn-boxes {
+    display: flex;
+    gap: 2px;
+}
+
+.sf9-shs-header .lrn-box {
+    width: 12px;
+    height: 16px;
+    border: var(--border-black);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 8px;
+    font-weight: bold;
+}
+
+/* Student Information Section */
+.sf9-student-info {
+    border: var(--border-black);
+    padding: 0.1in;
+    margin-bottom: 0.15in;
+}
+
+.sf9-info-row {
+    display: flex;
+    align-items: center;
+    margin-bottom: 0.05in;
+}
+
+.sf9-info-row:last-child {
+    margin-bottom: 0;
+}
+
+.sf9-info-label {
+    font-weight: bold;
+    min-width: 60px;
+    margin-right: 0.1in;
+}
+
+.sf9-info-field {
+    border-bottom: 1px solid #000;
+    flex: 1;
+    min-height: 16px;
+    padding: 0 2px;
+}
+
+.sf9-name-fields {
+    display: flex;
+    gap: 0.05in;
+    flex: 1;
+}
+
+.sf9-name-field {
+    border-bottom: 1px solid #000;
+    flex: 1;
+    min-height: 16px;
+    padding: 0 2px;
+}
+
+.sf9-name-field.small {
+    flex: 0.8;
+}
+
+/* Parent Message */
+.sf9-parent-message {
+    font-size: var(--font-size-small);
+    text-align: justify;
+    margin: 0.1in 0;
+    line-height: 1.3;
+}
+
+/* Signature Section */
+.sf9-signature-section {
+    margin-top: 0.15in;
+}
+
+.sf9-signature-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.1in;
+}
+
+.sf9-signature-box {
+    text-align: center;
+    min-width: 120px;
+}
+
+.sf9-signature-line {
+    border-top: 1px solid #000;
+    height: 20px;
+    margin-bottom: 2px;
+}
+
+.sf9-signature-name {
+    font-size: var(--font-size-small);
+    font-weight: bold;
+}
+
+.sf9-signature-title {
+    font-size: var(--font-size-small);
+}
+
+/* Attendance Table */
+.sf9-attendance-section {
+    border: var(--border-black);
+    padding: 0.05in;
+    margin-bottom: 0.1in;
+}
+
+.sf9-attendance-title {
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 0.05in;
+    font-size: var(--font-size-small);
+}
+
+.sf9-attendance-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 8px;
+}
+
+.sf9-attendance-table th,
+.sf9-attendance-table td {
+    border: 1px solid #000;
+    padding: 2px 4px;
+    text-align: center;
+    vertical-align: middle;
+}
+
+.sf9-attendance-table th {
+    font-weight: bold;
+    background: #f0f0f0;
+}
+
+.sf9-attendance-table .label-cell {
+    text-align: left;
+    font-weight: bold;
+    font-size: 8px;
+}
+
+.sf9-attendance-table .total-cell {
+    font-weight: bold;
+}
+
+/* Parent/Guardian Signature Section */
+.sf9-parent-signature-section {
+    border: var(--border-black);
+    padding: 0.05in;
+    margin-bottom: 0.1in;
+}
+
+.sf9-parent-signature-title {
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 0.05in;
+    font-size: var(--font-size-small);
+}
+
+.sf9-quarter-signatures {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.05in;
+}
+
+.sf9-quarter-signature {
+    text-align: center;
+}
+
+.sf9-quarter-label {
+    font-size: 8px;
+    margin-bottom: 2px;
+}
+
+.sf9-quarter-line {
+    border-top: 1px solid #000;
+    height: 15px;
+}
+
+/* Certificate of Transfer Section */
+.sf9-transfer-section {
+    border: var(--border-black);
+    padding: 0.05in;
+    margin-bottom: 0.1in;
+}
+
+.sf9-transfer-title {
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 0.05in;
+    font-size: var(--font-size-small);
+}
+
+.sf9-transfer-row {
+    display: flex;
+    align-items: center;
+    margin-bottom: 0.03in;
+}
+
+.sf9-transfer-label {
+    font-size: 8px;
+    margin-right: 0.05in;
+    min-width: 80px;
+}
+
+.sf9-transfer-field {
+    border-bottom: 1px solid #000;
+    flex: 1;
+    min-height: 14px;
+    padding: 0 2px;
+}
+
+.sf9-transfer-signatures {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 0.05in;
+}
+
+.sf9-transfer-signature {
+    text-align: center;
+    min-width: 100px;
+}
+
+.sf9-transfer-line {
+    border-top: 1px solid #000;
+    height: 15px;
+    margin-bottom: 2px;
+}
+
+.sf9-transfer-name {
+    font-size: 8px;
+    font-weight: bold;
+}
+
+.sf9-transfer-role {
+    font-size: 8px;
+}
+
+/* Cancellation Section */
+.sf9-cancellation-section {
+    border: var(--border-black);
+    padding: 0.05in;
+}
+
+.sf9-cancellation-title {
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 0.05in;
+    font-size: var(--font-size-small);
+}
+
+.sf9-cancellation-row {
+    display: flex;
+    align-items: center;
+    margin-bottom: 0.03in;
+}
+
+.sf9-cancellation-label {
+    font-size: 8px;
+    margin-right: 0.05in;
+    min-width: 60px;
+}
+
+.sf9-cancellation-field {
+    border-bottom: 1px solid #000;
+    flex: 1;
+    min-height: 14px;
+    padding: 0 2px;
+}
+
+.sf9-cancellation-signature {
+    text-align: center;
+    margin-top: 0.05in;
+}
+
+.sf9-cancellation-line {
+    border-top: 1px solid #000;
+    height: 15px;
+    margin-bottom: 2px;
+}
+
+.sf9-cancellation-role {
+    font-size: 8px;
+}
+
+/* Page 2: Main Report Card */
+.sf9-page2 {
+    padding: 0.25in;
+}
+
+.sf9-learning-progress-title {
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 0.1in;
+    font-size: var(--font-size-medium);
+    text-transform: uppercase;
+}
+
+/* Learning Areas Table */
+.sf9-learning-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 9px;
+    margin-bottom: 0.15in;
+}
+
+.sf9-learning-table th,
+.sf9-learning-table td {
+    border: 1px solid #000;
+    padding: 3px 5px;
+    text-align: center;
+    vertical-align: middle;
+}
+
+.sf9-learning-table th {
+    font-weight: bold;
+    background: #f0f0f0;
+}
+
+.sf9-learning-table .subject-cell {
+    text-align: left;
+    font-weight: bold;
+}
+
+.sf9-learning-table .quarter-header {
+    font-weight: bold;
+}
+
+.sf9-learning-table .final-grade {
+    font-weight: bold;
+}
+
+.sf9-learning-table .passed {
+    color: #006600;
+    font-weight: bold;
+}
+
+.sf9-learning-table .failed {
+    color: #cc0000;
+    font-weight: bold;
+}
+
+/* General Average Row */
+.sf9-general-average-row {
+    background: #f0f0f0 !important;
+    font-weight: bold !important;
+}
+
+.sf9-general-average-row td {
+    font-weight: bold !important;
+    background: #f0f0f0 !important;
+}
+
+/* Descriptors Section */
+.sf9-descriptors-section {
+    display: flex;
+    gap: 0.1in;
+    margin-bottom: 0.15in;
+    font-size: 8px;
+}
+
+.sf9-descriptor-column {
+    flex: 1;
+}
+
+.sf9-descriptor-title {
+    font-weight: bold;
+    margin-bottom: 0.05in;
+    text-align: center;
+}
+
+.sf9-descriptor-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.sf9-descriptor-table th,
+.sf9-descriptor-table td {
+    border: 1px solid #000;
+    padding: 2px 4px;
+    text-align: center;
+    font-size: 8px;
+}
+
+.sf9-descriptor-table th {
+    font-weight: bold;
+    background: #f0f0f0;
+}
+
+.sf9-descriptor-table .left-align {
+    text-align: left;
+}
+
+/* Core Values Section */
+.sf9-core-values-section {
+    margin-bottom: 0.15in;
+}
+
+.sf9-core-values-title {
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 0.05in;
+    font-size: var(--font-size-small);
+}
+
+.sf9-core-values-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 7px;
+}
+
+.sf9-core-values-table th,
+.sf9-core-values-table td {
+    border: 1px solid #000;
+    padding: 2px 3px;
+    text-align: center;
+    vertical-align: top;
+}
+
+.sf9-core-values-table th {
+    font-weight: bold;
+    background: #f0f0f0;
+}
+
+.sf9-core-values-table .core-value-cell {
+    text-align: left;
+    font-weight: bold;
+}
+
+.sf9-core-values-table .behavior-cell {
+    text-align: left;
+    line-height: 1.1;
+}
+
+/* Behavior Descriptors Section */
+.sf9-behavior-section {
+    display: flex;
+    gap: 0.1in;
+    margin-bottom: 0.15in;
+    font-size: 8px;
+}
+
+.sf9-behavior-column {
+    flex: 1;
+}
+
+.sf9-behavior-title {
+    font-weight: bold;
+    margin-bottom: 0.05in;
+    text-align: center;
+}
+
+.sf9-behavior-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.sf9-behavior-table th,
+.sf9-behavior-table td {
+    border: 1px solid #000;
+    padding: 2px 4px;
+    text-align: center;
+    font-size: 8px;
+}
+
+.sf9-behavior-table th {
+    font-weight: bold;
+    background: #f0f0f0;
+}
+
+.sf9-behavior-table .left-align {
+    text-align: left;
+}
+
+/* Final Signatures */
+.sf9-final-signatures {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 0.2in;
+}
+
+.sf9-final-signature {
+    text-align: center;
+    min-width: 150px;
+}
+
+.sf9-final-line {
+    border-top: 1px solid #000;
+    height: 20px;
+    margin-bottom: 2px;
+}
+
+.sf9-final-name {
+    font-size: var(--font-size-small);
+    font-weight: bold;
+}
+
+.sf9-final-role {
+    font-size: var(--font-size-small);
+}
+
+/* Print-specific styles */
+@media print {
+    @page {
+        size: letter;
+        margin: 0.25in;
+    }
+
+    body {
+        background: #fff !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+    .sf9-deped-page {
+        page-break-after: always;
+        border: none !important;
+        margin: 0 !important;
+        padding: 0.25in !important;
+    }
+
+    .sf9-deped-page:last-child {
+        page-break-after: auto;
+    }
+
+    /* Hide modal elements when printing */
+    .modal-header,
+    .modal-footer,
+    .topbar,
+    .sidebar,
+    .footer {
+        display: none !important;
+    }
+
+    /* Ensure proper color printing */
+    .sf9-learning-table .passed,
+    .sf9-general-average-row td {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+}
+
+/* Responsive adjustments for screen preview */
+@media screen {
+    .sf9-deped-container {
+        padding: 20px;
+        background: #f5f5f5;
+    }
+    
+    .sf9-deped-page {
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        margin-bottom: 20px;
+        max-width: 100%;
+        overflow: auto;
+    }
+}

@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en" data-nav="custom">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teacher Dashboard - DepEd Academic Monitoring System</title>
+
+    <link rel="stylesheet" href="../assets/css/dashboard.css?v=20260320">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+<body>
+    <nav class="topbar">
+        <div class="topbar-left">
+            <button class="menu-toggle" id="menuToggle">
+                <i class="fas fa-bars"></i>
+            </button>
+            <div class="logo">
+                <img src="../assets/img/logo/logo.jpg" alt="DepEd Logo" class="logo-img">
+                <div class="logo-text">
+                    <h1>DepEd Academic Monitoring</h1>
+                    <p>Teacher Portal</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="topbar-right">
+            <button class="notification-btn" id="notificationBtn" type="button">
+                <i class="fas fa-bell"></i>
+                <span class="notification-badge" id="notificationCount">0</span>
+            </button>
+
+            <div class="user-menu">
+                <button class="user-btn" id="userMenuBtn" type="button">
+                    <div class="user-avatar">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div class="user-info">
+                        <span class="user-name">Teacher</span>
+                        <span class="user-role">Teacher</span>
+                    </div>
+                    <i class="fas fa-chevron-down"></i>
+                </button>
+
+                <div class="user-dropdown" id="userDropdown">
+                    <a href="../pages/profile.html"><i class="fas fa-user"></i> Profile</a>
+                    <a href="../pages/settings.html"><i class="fas fa-cog"></i> Settings</a>
+                    <hr>
+                    <a href="../logout.php" class="logout"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <aside class="sidebar" id="sidebar">
+        <nav class="sidebar-nav">
+            <ul class="nav-list" data-canonical-nav="1">
+                <li class="nav-item">
+                    <a href="#home" class="nav-link active" data-section="home">
+                        <i class="fas fa-home"></i>
+                        <span>Home</span>
+                    </a>
+                </li>
+
+                <li class="nav-item has-submenu">
+                    <a href="#" class="nav-link" id="transactionsToggle">
+                        <i class="fas fa-exchange-alt"></i>
+                        <span>Teaching</span>
+                        <i class="fas fa-chevron-down submenu-icon"></i>
+                    </a>
+                    <ul class="submenu" id="transactionsSubmenu">
+                        <li><a href="../pages/class-offerings.html"><i class="fas fa-clipboard-list"></i> Class Offerings</a></li>
+                        <li><a href="../pages/final-grades.html"><i class="fas fa-certificate"></i> Final Grades</a></li>
+                        <li><a href="../pages/report-cards.html"><i class="fas fa-file-alt"></i> Report Cards</a></li>
+                    </ul>
+                </li>
+
+                <li class="nav-item">
+                    <a href="../pages/profile.html" class="nav-link">
+                        <i class="fas fa-user"></i>
+                        <span>Profile</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </aside>
+
+    <main class="main-content" id="mainContent">
+        <div id="homeSection" class="content-section active">
+            <nav class="breadcrumb">
+                <a href="#home"><i class="fas fa-home"></i> Home</a>
+            </nav>
+
+            <section class="announcement-composer-top" data-animate="fade-right" aria-label="Compose announcement">
+                <div class="compose-card" id="composeCard" role="button" tabindex="0" aria-label="Open create announcement form" onclick="openComposeModal()">
+                    <div class="compose-row">
+                        <div class="compose-avatar" aria-hidden="true">
+                            <i class="fas fa-bullhorn"></i>
+                        </div>
+                        <button class="compose-field" id="composeField" type="button" onclick="event.stopPropagation(); openComposeModal();">
+                            What's new for learners, teachers, and parents?
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <div class="announcements-container">
+                <div class="announcements-feed" id="announcementsFeed">
+                    <div class="loading-state" style="text-align: center; padding: 2rem; color: #666;">
+                        <i class="fas fa-spinner fa-spin" style="font-size: 1.5rem; margin-bottom: 1rem;"></i>
+                        <p style="font-size: 1rem;">Loading announcements...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Create Announcement Modal -->
+    <div class="modal" id="createAnnouncementModal">
+        <div class="modal-content modal-lg announcement-composer">
+            <div class="modal-header composer-header">
+                <h2 class="modal-title">
+                    <i class="fas fa-bullhorn"></i>
+                    Create Announcement
+                </h2>
+                <button class="modal-close" id="closeAnnouncementModal" type="button">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="createAnnouncementForm">
+                <div class="modal-body composer-body">
+                    <div class="composer-author">
+                        <div class="author-avatar">
+                            <i class="fas fa-user-circle"></i>
+                        </div>
+                        <div class="author-info">
+                            <strong class="author-name" id="composerUserName">Teacher</strong>
+                            <div class="audience-selector">
+                                <select id="targetRole" name="target_role_id" class="audience-select">
+                                    <option value="">🌐 Everyone</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group composer-title-group">
+                        <input type="text"
+                               id="announcementTitle"
+                               name="title"
+                               class="composer-title-input"
+                               placeholder="What's the headline?"
+                               required
+                               maxlength="200">
+                        <div class="title-counter">
+                            <span id="titleCounter">0</span>/200
+                        </div>
+                    </div>
+
+                    <div class="form-group composer-content-group">
+                        <textarea id="announcementBody"
+                                  name="body"
+                                  class="composer-textarea"
+                                  placeholder="Share important updates, news, or announcements with your community..."
+                                  required
+                                  rows="6"></textarea>
+                        <div class="content-counter">
+                            <span id="contentCounter">0</span> characters
+                        </div>
+                    </div>
+
+                    <div class="composer-advanced">
+                        <button type="button" class="advanced-toggle" id="advancedToggle">
+                            <i class="fas fa-cog"></i>
+                            Advanced Options
+                            <i class="fas fa-chevron-down toggle-icon"></i>
+                        </button>
+                        <div class="advanced-options" id="advancedOptions" style="display: none;">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="expiresAt" class="form-label">
+                                        <i class="fas fa-calendar-times"></i> Expiration Date
+                                    </label>
+                                    <input type="datetime-local" id="expiresAt" name="expires_at" class="form-control">
+                                    <small class="form-hint">Leave blank for no expiration</small>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">
+                                        <i class="fas fa-thumbtack"></i> Post Options
+                                    </label>
+                                    <div class="checkbox-group">
+                                        <label class="checkbox-label">
+                                            <input type="checkbox" id="isPinned" name="is_pinned" value="1">
+                                            <span class="checkbox-text">
+                                                <i class="fas fa-thumbtack"></i> Pin to top
+                                                <small>Keep this announcement at the top of the feed</small>
+                                            </span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer composer-footer">
+                    <div class="composer-actions">
+                        <button type="button" class="action-btn" id="addEmojiBtn" title="Add emoji">
+                            <i class="fas fa-smile"></i>
+                        </button>
+                    </div>
+                    <div class="composer-submit">
+                        <button type="button" class="btn btn-outline btn-sm" id="cancelAnnouncementBtn">Cancel</button>
+                        <button type="submit" class="btn btn-primary btn-post" id="submitAnnouncementBtn">
+                            <i class="fas fa-paper-plane"></i> Post
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <div class="footer-content">
+            <p>&copy; 2026 Department of Education - Republic of the Philippines</p>
+            <p>Academic Monitoring System v1.0</p>
+        </div>
+    </footer>
+
+    <script src="../assets/js/dashboard.js?v=20260422"></script>
+    <script src="../js/dashboard-announcements.js?v=20260320"></script>
+</body>
+</html>

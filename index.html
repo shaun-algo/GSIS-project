@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>DepEd Dashboard | Login</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="assets/css/index_new.css" />
+
+    <!-- AOS Library for Animations -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700;800&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Icons -->
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    />
+</head>
+<body class="signup-split-body">
+
+    <main class="signup-split" role="main">
+        <!-- Left Panel - Branding & Information -->
+        <section class="signup-left" aria-labelledby="login-left-title">
+            <div class="left-inner" data-aos="fade-right" data-aos-duration="700">
+                <div class="brand-mark">
+                    <img src="assets/img/logo/logo.jpg" alt="School Logo">
+                </div>
+
+                <h1 id="login-left-title">
+                    G.Pelaez Integrated School
+                    <span class="school-location">Gitagum Misamis Oriental</span>
+                </h1>
+                <p>Secure access to your Portal</p>
+
+                <details class="left-dropdown">
+                    <summary>System Information</summary>
+                    <ul class="left-features" role="list">
+                        <li>Sign in with your authorized DepEd account credentials.</li>
+                        <li>All activities are logged for security and audit purposes.</li>
+                        <li>Only authorized educators and administrators have access.</li>
+                        <li>For assistance, contact your IT administrator.</li>
+                        <li>System: Academic Monitoring System</li>
+                        <li>Intended users: Teachers, advisers, and admins</li>
+                        <li>Version: 1.0</li>
+                        <li>Support: it-support@deped.gov.ph</li>
+                    </ul>
+                </details>
+            </div>
+        </section>
+
+        <!-- Right Panel - Login Form -->
+        <section class="signup-right">
+            <div class="signup-container">
+                <div class="right-logo" aria-label="Department of Education logo">
+                    <img src="assets/img/logo/pngegg.png" alt="Department of Education" class="deped-logo-text" />
+                </div>
+                <div class="signup-card" data-aos="fade-up" data-aos-delay="200" data-aos-duration="800">
+
+                    <div class="form-header">
+                        <h2 class="form-title">Sign In</h2>
+
+                    </div>
+
+                    <form class="login-form" id="loginForm">
+                        <div class="form-group">
+                            <label class="form-label" for="username">
+                                <i class="fas fa-user-circle"></i> Username
+                            </label>
+                            <input
+                                type="text"
+                                class="form-control"
+                                id="username"
+                                name="username"
+                                placeholder="Enter your username"
+                                autocomplete="username"
+                                required
+                            />
+                            <span class="error-message">Username is required</span>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="password">
+                                <i class="fas fa-shield-alt"></i> Password
+                            </label>
+                            <div class="password-wrapper">
+                                <input
+                                    type="password"
+                                    class="form-control"
+                                    id="password"
+                                    name="password"
+                                    placeholder="Enter your password"
+                                    autocomplete="current-password"
+                                    required
+                                />
+                                <i class="fas fa-eye toggle-password" id="togglePassword"></i>
+                            </div>
+                            <span class="error-message">Password is required</span>
+                        </div>
+
+                        <div class="login-options">
+                            <label class="remember-me">
+                                <input type="checkbox" id="rememberMe" />
+                                <span>Remember me</span>
+                            </label>
+                            <a href="#" class="forgot-link">Forgot password?</a>
+                        </div>
+
+                        <button type="submit" class="btn-primary" id="loginBtn">
+                            <i class="fas fa-sign-in-alt"></i> Sign In
+                        </button>
+
+                        <p class="login-status" id="loginStatus" role="alert"></p>
+
+                        <p class="privacy-note">
+                            By signing in, you agree to the
+                               <a href="https://www.deped.gov.ph/about-deped/data-privacy-notice/" class="privacy-link" target="_blank" rel="noopener noreferrer">DepEd Data Privacy Notice</a>.
+                        </p>
+                        <p class="privacy-subnote">In compliance with Republic Act No. 10173 (Data Privacy Act of 2012)</p>
+
+                        <div class="security-banner" role="note">
+                            <i class="fas fa-shield-alt"></i> Your information is protected with industry-standard encryption
+                        </div>
+                    </form>
+                </div>
+                <div class="panel-footer">Copyright Department of Education - Philippines</div>
+            </div>
+        </section>
+    </main>
+
+    <!-- AOS Library -->
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+
+    <!-- Axios -->
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+    <!-- Scripts -->
+    <script src="assets/js/auth/login.js"></script>
+</body>
+</html>

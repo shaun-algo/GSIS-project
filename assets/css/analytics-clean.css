@@ -1,0 +1,287 @@
+@import url('https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&display=swap');
+
+/*
+ * Analytics-only visual refresh.
+ * Scoped to body.analytics-modern to avoid affecting non-analytics modules.
+ */
+body.analytics-modern {
+    background:
+        radial-gradient(900px 320px at 12% -8%, rgba(0, 85, 164, 0.08), transparent 62%),
+        radial-gradient(700px 260px at 88% 0%, rgba(16, 185, 129, 0.08), transparent 58%),
+        #f4f6f9;
+    color: #1f2937;
+    font-family: 'Public Sans', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body.analytics-modern .main-content {
+    padding: 1.75rem 2rem 2rem;
+    animation: analyticsPageIn 0.35s ease-out;
+}
+
+body.analytics-modern .main-content > * {
+    max-width: 1320px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+@keyframes analyticsPageIn {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+body.analytics-modern .page-header {
+    margin-bottom: 1.4rem;
+    padding-bottom: 0.85rem;
+    border-bottom: 1px solid #dbe2ea;
+}
+
+body.analytics-modern .page-title {
+    font-size: 1.55rem;
+    letter-spacing: -0.01em;
+    color: #0f172a;
+}
+
+body.analytics-modern .page-subtitle {
+    margin-top: 0.35rem;
+    font-size: 0.92rem;
+    color: #5b6777;
+}
+
+body.analytics-modern .card {
+    border: 1px solid #d9e2ec;
+    border-radius: 12px;
+    background: #ffffff;
+    box-shadow: 0 2px 9px rgba(15, 23, 42, 0.05);
+}
+
+body.analytics-modern .card-header {
+    padding: 1rem 1.2rem;
+    border-bottom: 1px solid #e7edf4;
+}
+
+body.analytics-modern .card-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #0f172a;
+}
+
+body.analytics-modern .card-body {
+    padding: 1.2rem;
+}
+
+body.analytics-modern .summary-cards {
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.2rem;
+}
+
+body.analytics-modern .summary-card .card-content {
+    padding: 1.15rem;
+}
+
+body.analytics-modern .card-label {
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #64748b;
+}
+
+body.analytics-modern .card-value {
+    font-size: 1.7rem;
+    margin: 0.4rem 0 0.2rem;
+}
+
+body.analytics-modern .card-trend {
+    font-size: 0.82rem;
+}
+
+body.analytics-modern .card-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 999px;
+    font-size: 1.15rem;
+}
+
+body.analytics-modern .card-icon.bg-blue {
+    background: rgba(0, 85, 164, 0.12);
+    color: #0055a4;
+}
+
+body.analytics-modern .card-icon.bg-green {
+    background: rgba(16, 185, 129, 0.14);
+    color: #0f766e;
+}
+
+body.analytics-modern .card-icon.bg-purple {
+    background: rgba(71, 85, 105, 0.14);
+    color: #334155;
+}
+
+body.analytics-modern .card-icon.bg-orange {
+    background: rgba(245, 158, 11, 0.16);
+    color: #b45309;
+}
+
+body.analytics-modern .charts-row {
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+body.analytics-modern .chart-card,
+body.analytics-modern .performance-card,
+body.analytics-modern .alerts-card {
+    min-height: 430px;
+}
+
+body.analytics-modern .dashboard-row {
+    grid-template-columns: 1.1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+body.analytics-modern .chart-card .card-body,
+body.analytics-modern .performance-card .card-body {
+    min-height: 360px;
+}
+
+body.analytics-modern canvas {
+    height: 380px !important;
+    max-height: 460px;
+}
+
+body.analytics-modern .alerts-list {
+    display: grid;
+    gap: 0.65rem;
+}
+
+body.analytics-modern .alert-item {
+    margin-bottom: 0;
+    border: 1px solid #e2e8f0;
+    border-left-width: 3px;
+    border-radius: 10px;
+    background: #f8fafc;
+}
+
+body.analytics-modern .btn {
+    border-radius: 10px;
+    border-width: 1px;
+    transition: background-color 0.18s ease, border-color 0.18s ease, color 0.18s ease;
+}
+
+body.analytics-modern .btn-primary {
+    background: #0055a4;
+    border-color: #0055a4;
+}
+
+body.analytics-modern .btn-outline {
+    border-color: #94a3b8;
+    color: #334155;
+}
+
+body.analytics-modern .btn-outline:hover {
+    background: #334155;
+    border-color: #334155;
+    color: #ffffff;
+}
+
+body.analytics-modern .quick-actions {
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 0.75rem;
+}
+
+body.analytics-modern .footer {
+    background: transparent;
+    border-top: 1px solid #dbe2ea;
+}
+
+body.analytics-modern .footer-content p {
+    color: #64748b;
+}
+
+/* Dashboard overview: larger cards with clearer structure */
+body.analytics-modern.analytics-overview .summary-cards {
+    grid-template-columns: repeat(4, minmax(240px, 1fr));
+    gap: 1.15rem;
+    margin-bottom: 1.4rem;
+}
+
+body.analytics-modern.analytics-overview .summary-card {
+    min-height: 170px;
+}
+
+body.analytics-modern.analytics-overview .summary-card .card-content {
+    padding: 1.35rem;
+    height: 100%;
+}
+
+body.analytics-modern.analytics-overview .card-value {
+    font-size: 2.05rem;
+}
+
+body.analytics-modern.analytics-overview .charts-row {
+    gap: 1.15rem;
+    margin-bottom: 1.15rem;
+}
+
+body.analytics-modern.analytics-overview .chart-card {
+    min-height: 500px;
+}
+
+body.analytics-modern.analytics-overview .dashboard-row-single {
+    grid-template-columns: 1fr;
+}
+
+body.analytics-modern.analytics-overview .performance-card {
+    min-height: 520px;
+}
+
+body.analytics-modern.analytics-overview canvas {
+    height: 430px !important;
+    max-height: 560px;
+}
+
+@media (max-width: 1024px) {
+    body.analytics-modern .main-content {
+        padding: 1.25rem 1rem 1.5rem;
+    }
+
+    body.analytics-modern .dashboard-row {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    body.analytics-modern .page-title {
+        font-size: 1.3rem;
+    }
+
+    body.analytics-modern .summary-cards {
+        grid-template-columns: 1fr;
+    }
+
+    body.analytics-modern .charts-row {
+        grid-template-columns: 1fr;
+    }
+
+    body.analytics-modern canvas {
+        height: 320px !important;
+        max-height: 380px;
+    }
+
+    body.analytics-modern.analytics-overview .summary-cards {
+        grid-template-columns: repeat(2, minmax(220px, 1fr));
+    }
+}
+
+@media (max-width: 640px) {
+    body.analytics-modern.analytics-overview .summary-cards {
+        grid-template-columns: 1fr;
+    }
+}

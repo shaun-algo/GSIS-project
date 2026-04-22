@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en" data-nav="custom">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Learner Dashboard - DepEd Academic Monitoring System</title>
+
+    <link rel="stylesheet" href="../assets/css/dashboard.css?v=20260320">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+<body>
+    <nav class="topbar">
+        <div class="topbar-left">
+            <button class="menu-toggle" id="menuToggle" type="button">
+                <i class="fas fa-bars"></i>
+            </button>
+            <div class="logo">
+                <img src="../assets/img/logo/logo.jpg" alt="DepEd Logo" class="logo-img">
+                <div class="logo-text">
+                    <h1>DepEd Academic Monitoring</h1>
+                    <p>Learner Portal</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="topbar-right">
+            <button class="notification-btn" id="notificationBtn" type="button">
+                <i class="fas fa-bell"></i>
+                <span class="notification-badge" id="notificationCount">0</span>
+            </button>
+
+            <div class="user-menu">
+                <button class="user-btn" id="userMenuBtn" type="button">
+                    <div class="user-avatar">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div class="user-info">
+                        <span class="user-name">Learner</span>
+                        <span class="user-role">Learner</span>
+                    </div>
+                    <i class="fas fa-chevron-down"></i>
+                </button>
+
+                <div class="user-dropdown" id="userDropdown">
+                    <a href="../pages/profile.html"><i class="fas fa-user"></i> Profile</a>
+                    <hr>
+                    <a href="../logout.php" class="logout"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <aside class="sidebar" id="sidebar">
+        <nav class="sidebar-nav">
+            <ul class="nav-list" data-canonical-nav="1">
+                <li class="nav-item">
+                    <a href="#home" class="nav-link active" data-section="home">
+                        <i class="fas fa-home"></i>
+                        <span>Home</span>
+                    </a>
+                </li>
+
+                <li class="nav-item has-submenu">
+                    <a href="#" class="nav-link" id="myAcademicsToggle">
+                        <i class="fas fa-graduation-cap"></i>
+                        <span>My Academics</span>
+                        <i class="fas fa-chevron-down submenu-icon"></i>
+                    </a>
+                    <ul class="submenu" id="myAcademicsSubmenu">
+                        <li><a href="../pages/grades.html"><i class="fas fa-chart-bar"></i> Grades</a></li>
+                        <li><a href="../pages/report-cards.html"><i class="fas fa-file-alt"></i> Report Cards</a></li>
+                    </ul>
+                </li>
+
+                <li class="nav-item">
+                    <a href="../pages/profile.html" class="nav-link">
+                        <i class="fas fa-user"></i>
+                        <span>Profile</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </aside>
+
+    <main class="main-content" id="mainContent">
+        <div id="homeSection" class="content-section active">
+            <nav class="breadcrumb">
+                <a href="#home"><i class="fas fa-home"></i> Home</a>
+            </nav>
+
+            <div class="announcements-container">
+                <div class="announcements-feed" id="announcementsFeed">
+                    <div class="loading-state" style="text-align: center; padding: 2rem; color: #666;">
+                        <i class="fas fa-spinner fa-spin" style="font-size: 1.5rem; margin-bottom: 1rem;"></i>
+                        <p style="font-size: 1rem;">Loading announcements...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="footer-content">
+            <p>&copy; 2026 Department of Education - Republic of the Philippines</p>
+            <p>Academic Monitoring System v1.0</p>
+        </div>
+    </footer>
+
+    <script src="../assets/js/dashboard.js?v=20260422"></script>
+    <script src="../js/dashboard-announcements.js?v=20260320"></script>
+</body>
+</html>

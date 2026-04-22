@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Class Records - DepEd Academic Monitoring System</title>
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="../assets/css/dashboard.css?v=20260320">
+    <link rel="stylesheet" href="../assets/css/modal.css">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Axios -->
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <style>
+        .cr-tabs { display: flex; gap: 8px; flex-wrap: wrap; }
+        .cr-tabs .btn.active { border-color: var(--deped-blue); background: var(--deped-blue); color: #fff; }
+        .cr-filters { display: flex; gap: 12px; flex-wrap: wrap; align-items: end; }
+        .cr-filters .form-group { margin: 0; min-width: 180px; }
+        .cr-metrics { display: grid; grid-template-columns: repeat(4, minmax(180px, 1fr)); gap: 12px; }
+        @media (max-width: 980px) { .cr-metrics { grid-template-columns: repeat(2, minmax(180px, 1fr)); } }
+        @media (max-width: 560px) { .cr-metrics { grid-template-columns: 1fr; } }
+
+        .cr-metric { border: 1px solid var(--gray-200); background: var(--surface-0); border-radius: 12px; padding: 12px 14px; }
+        .cr-metric .k { font-size: 12px; color: var(--gray-600); margin-bottom: 4px; font-weight: 700; text-transform: uppercase; letter-spacing: .3px; }
+        .cr-metric .v { font-size: 22px; font-weight: 800; color: var(--gray-900); }
+        .cr-metric .s { font-size: 12px; color: var(--gray-600); margin-top: 2px; }
+
+        .cr-grade-input { width: 84px; text-align: center; }
+
+        /* Print: only show the print area */
+        @media print {
+            body * { visibility: hidden !important; }
+            #cr-print-area, #cr-print-area * { visibility: visible !important; }
+            #cr-print-area { position: absolute; left: 0; top: 0; width: 100%; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Top Navigation Bar -->
+    <nav class="topbar">
+        <div class="topbar-left">
+            <button class="menu-toggle" id="menuToggle">
+                <i class="fas fa-bars"></i>
+            </button>
+            <div class="logo">
+                <img src="../assets/img/logo/logo.jpg" alt="DepEd Logo" class="logo-img">
+                <div class="logo-text">
+                    <h1>DepEd Academic Monitoring</h1>
+                    <p>Class Records</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="topbar-right">
+            <button class="notification-btn" id="notificationBtn">
+                <i class="fas fa-bell"></i>
+                <span class="notification-badge">3</span>
+            </button>
+
+            <div class="user-menu">
+                <button class="user-btn" id="userMenuBtn">
+                    <div class="user-avatar">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div class="user-info">
+                        <span class="user-name">User</span>
+                        <span class="user-role">Role</span>
+                    </div>
+                    <i class="fas fa-chevron-down"></i>
+                </button>
+
+                <div class="user-dropdown" id="userDropdown">
+                    <a href="profile.html"><i class="fas fa-user"></i> Profile</a>
+                    <a href="settings.html"><i class="fas fa-cog"></i> Settings</a>
+                    <hr>
+                    <a href="../logout.php" class="logout"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar" id="sidebar">
+        <nav class="sidebar-nav">
+            <ul class="nav-list">
+                <li class="nav-item">
+                    <a href="../dashboard/teacher_dashboard.html" class="nav-link">
+                        <i class="fas fa-home"></i>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+
+                <li class="nav-item has-submenu open">
+                    <a href="#" class="nav-link active" id="transactionsToggle">
+                        <i class="fas fa-exchange-alt"></i>
+                        <span>Transactions</span>
+                        <i class="fas fa-chevron-down submenu-icon"></i>
+                    </a>
+                    <ul class="submenu open" id="transactionsSubmenu">
+                        <li><a href="class-offerings.html" data-transaction-link="class_offerings"><i class="fas fa-clipboard-list"></i> Class Offerings</a></li>
+                        <li><a href="grading-periods.html" data-transaction-link="grading_periods"><i class="fas fa-calendar-alt"></i> Grading Periods</a></li>
+                        <li><a href="grades.html" data-transaction-link="grades"><i class="fas fa-chart-bar"></i> Grades</a></li>
+                        <li><a href="section-rankings.html" data-transaction-link="section_rankings"><i class="fas fa-ranking-star"></i> Section Rankings</a></li>
+                        <li><a href="class-records.html" class="active" data-transaction-link="class_records"><i class="fas fa-book"></i> Class Records</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content" id="mainContent">
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">Class Records</h1>
+                <p class="page-subtitle"></p>
+            </div>
+        </div>
+
+        <div class="card card-overflow-visible">
+            <div class="card-header" style="display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap;">
+                <div>
+                    <h2 class="card-title" id="cr-header-title">Grade Encoding</h2>
+                    <p class="card-subtitle" id="cr-header-sub"></p>
+                </div>
+                <div class="cr-tabs">
+                    <button class="btn btn-outline active" id="tabBtnGrades" type="button"><i class="fas fa-pen"></i> Grade Encoding</button>
+                    <button class="btn btn-outline" id="tabBtnHonors" type="button"><i class="fas fa-award"></i> Honors List &amp; Export</button>
+                </div>
+            </div>
+
+            <div class="card-body">
+                <!-- Grade Encoding Tab -->
+                <section id="tabGrades">
+                    <div class="cr-filters" style="margin-bottom: 12px;">
+                        <div class="form-group">
+                            <label class="form-label" for="selSection">Section</label>
+                            <select class="form-control" id="selSection"></select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="selSubject">Subject</label>
+                            <select class="form-control" id="selSubject"></select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="selPeriod">Grading Period</label>
+                            <select class="form-control" id="selPeriod"></select>
+                        </div>
+                        <div style="margin-left:auto; display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+                            <button class="btn btn-primary" id="btnSave" type="button"><i class="fas fa-save"></i> Save Grades</button>
+                        </div>
+                    </div>
+
+                    <div class="cr-metrics" id="metricsGrades" style="margin-bottom: 12px;"></div>
+
+                    <div style="margin-bottom:8px;">
+                        <input id="cr-roster-search" class="form-control" type="text" placeholder="Search learners by name or LRN..." style="max-width:300px;">
+                    </div>
+
+                    <div style="overflow-x:auto;">
+                        <table class="tx-table" id="tblGrades">
+                            <thead>
+                                <tr>
+                                    <th style="width: 42px;">#</th>
+                                    <th>Learner</th>
+                                    <th style="width: 140px;">LRN</th>
+                                    <th style="width: 110px;">WW</th>
+                                    <th style="width: 110px;">PT</th>
+                                    <th style="width: 110px;">QE</th>
+                                    <th style="width: 120px;">QG</th>
+                                    <th style="width: 110px;">Remark</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tbodyGrades"></tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- Honors Tab -->
+                <section id="tabHonors" style="display:none;">
+                    <div class="cr-filters" style="margin-bottom: 12px;">
+                        <div class="form-group">
+                            <label class="form-label" for="selHonScope">Scope</label>
+                            <select class="form-control" id="selHonScope">
+                                <option value="section">Per Section</option>
+                                <option value="grade">Per Year Level</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="selHonSection">Section</label>
+                            <select class="form-control" id="selHonSection"></select>
+                        </div>
+                        <div class="form-group" id="wrapHonSchoolYear" style="display:none;">
+                            <label class="form-label" for="selHonSchoolYear">School Year</label>
+                            <select class="form-control" id="selHonSchoolYear"></select>
+                        </div>
+                        <div class="form-group" id="wrapHonGradeLevel" style="display:none;">
+                            <label class="form-label" for="selHonGradeLevel">Year Level</label>
+                            <select class="form-control" id="selHonGradeLevel"></select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="selHonMode">Period</label>
+                            <select class="form-control" id="selHonMode">
+                                <option value="quarter">Quarter (selected grading period)</option>
+                                <option value="final">Final (average of all periods)</option>
+                            </select>
+                        </div>
+                        <div class="form-group" id="wrapHonPeriod">
+                            <label class="form-label" for="selHonPeriod">Grading Period</label>
+                            <select class="form-control" id="selHonPeriod"></select>
+                        </div>
+                        <div style="margin-left:auto; display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+                            <button class="btn btn-outline" id="btnHonExport" type="button"><i class="fas fa-download"></i> Download Export</button>
+                            <button class="btn btn-primary" id="btnHonPrint" type="button"><i class="fas fa-print"></i> Print / Save PDF</button>
+                        </div>
+                    </div>
+
+                    <div style="overflow-x:auto;">
+                        <table class="tx-table" id="tblHonors">
+                            <thead id="theadHonors"></thead>
+                            <tbody id="tbodyHonors"></tbody>
+                        </table>
+                    </div>
+
+                    <div id="cr-print-area" style="display:none;"></div>
+                </section>
+            </div>
+        </div>
+
+        <footer class="footer">
+            <div class="footer-content">
+                <p>&copy; 2026 Department of Education - Republic of the Philippines</p>
+                <p>Academic Monitoring System v1.0</p>
+            </div>
+        </footer>
+    </main>
+
+    <script src="../assets/js/dashboard.js?v=20260421"></script>
+    <script src="../js/class-records.js?v=20260422_4"></script>
+</body>
+</html>

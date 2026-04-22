@@ -1,0 +1,6 @@
+# Block direct web access to database assets
+# Includes are not affected by this rule.
+
+<FilesMatch "\.(sql|php)$">
+    Require all denied
+</FilesMatch>

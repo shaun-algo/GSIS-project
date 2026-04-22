@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Intervention Statuses - DepEd Academic Monitoring System</title>
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="../../assets/css/dashboard.css?v=20260320">
+    <link rel="stylesheet" href="../../assets/css/datatable.css">
+    <link rel="stylesheet" href="../../assets/css/modal.css">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Axios -->
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+<body>
+    <!-- Top Navigation Bar -->
+    <nav class="topbar">
+        <div class="topbar-left">
+            <button class="menu-toggle" id="menuToggle">
+                <i class="fas fa-bars"></i>
+            </button>
+            <div class="logo">
+                <img src="../../assets/img/logo/logo.jpg" alt="DepEd Logo" class="logo-img">
+                <div class="logo-text">
+                    <h1>DepEd Academic Monitoring</h1>
+                    <p>Administrative Dashboard</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="topbar-right">
+            <button class="notification-btn" id="notificationBtn">
+                <i class="fas fa-bell"></i>
+                <span class="notification-badge">3</span>
+            </button>
+
+            <div class="user-menu">
+                <button class="user-btn" id="userMenuBtn">
+                    <div class="user-avatar">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div class="user-info">
+                        <span class="user-name">Admin User</span>
+                        <span class="user-role">Administrator</span>
+                    </div>
+                    <i class="fas fa-chevron-down"></i>
+                </button>
+
+                <div class="user-dropdown" id="userDropdown">
+                    <a href="../profile.html"><i class="fas fa-user"></i> Profile</a>
+                    <a href="../settings.html"><i class="fas fa-cog"></i> Settings</a>
+                    <hr>
+                    <a href="../../logout.php" class="logout"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar" id="sidebar">
+        <nav class="sidebar-nav">
+            <ul class="nav-list">
+                <li class="nav-item">
+                    <a href="../../dashboard/admin_dashboard.html" class="nav-link">
+                        <i class="fas fa-home"></i>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+
+                <li class="nav-item has-submenu open">
+                    <a href="#" class="nav-link active" id="masterfilesToggle">
+                        <i class="fas fa-folder"></i>
+                        <span>Masterfiles</span>
+                        <i class="fas fa-chevron-down submenu-icon"></i>
+                    </a>
+                    <ul class="submenu open" id="masterfilesSubmenu">
+                        <li><a href="users.html" data-masterfile-link="users"><i class="fas fa-users"></i> Users</a></li>
+                        <li><a href="roles.html" data-masterfile-link="roles"><i class="fas fa-user-tag"></i> Roles</a></li>
+                        <li><a href="learners.html" data-masterfile-link="students"><i class="fas fa-user-graduate"></i> Learners</a></li>
+                        <li><a href="employees.html" data-masterfile-link="employees"><i class="fas fa-briefcase"></i> Employees</a></li>
+                        <li><a href="subjects.html" data-masterfile-link="subjects"><i class="fas fa-book"></i> Subjects</a></li>
+                        <li><a href="subject-codes.html" data-masterfile-link="subject_codes"><i class="fas fa-barcode"></i> Subject Codes</a></li>
+                        <li><a href="sections.html" data-masterfile-link="sections"><i class="fas fa-school"></i> Sections</a></li>
+                        <li><a href="grade-levels.html" data-masterfile-link="grade_levels"><i class="fas fa-layer-group"></i> Grade Levels</a></li>
+                        <li><a href="education-levels.html" data-masterfile-link="education_levels"><i class="fas fa-graduation-cap"></i> Education Levels</a></li>
+                        <li><a href="school-years.html" data-masterfile-link="school_years"><i class="fas fa-calendar"></i> School Years</a></li>
+                        <li><a href="grading-system-types.html" data-masterfile-link="grading_system_types"><i class="fas fa-list-ol"></i> Grading Systems</a></li>
+                        <li><a href="civil-statuses.html" data-masterfile-link="civil_statuses"><i class="fas fa-heart"></i> Civil Statuses</a></li>
+                        <li><a href="religions.html" data-masterfile-link="religions"><i class="fas fa-church"></i> Religions</a></li>
+                        <li><a href="family-relationships.html" data-masterfile-link="family_relationships"><i class="fas fa-people-arrows"></i> Family Relationships</a></li>
+                        <li><a href="name-extensions.html" data-masterfile-link="name_extensions"><i class="fas fa-signature"></i> Name Extensions</a></li>
+                        <li><a href="learner-statuses.html" data-masterfile-link="learner_statuses"><i class="fas fa-toggle-on"></i> Learner Statuses</a></li>
+                        <li><a href="risk-levels.html" data-masterfile-link="risk_levels"><i class="fas fa-exclamation-circle"></i> Risk Levels</a></li>
+                        <li><a href="honor-levels.html" data-masterfile-link="honor_levels"><i class="fas fa-award"></i> Honor Levels</a></li>
+                        <li><a href="document-types.html" data-masterfile-link="document_types"><i class="fas fa-file"></i> Document Types</a></li>
+                        <li><a href="enrollment-types.html" data-masterfile-link="enrollment_types"><i class="fas fa-list"></i> Enrollment Types</a></li>
+                        <li><a href="grading-period-statuses.html" data-masterfile-link="grading_period_statuses"><i class="fas fa-sync"></i> Grading Period Statuses</a></li>
+                        <li><a href="indigenous-groups.html" data-masterfile-link="indigenous_groups"><i class="fas fa-users"></i> Indigenous Groups</a></li>
+                        <li><a href="intervention-statuses.html" data-masterfile-link="intervention_statuses"><i class="fas fa-heartbeat"></i> Intervention Statuses</a></li>
+                        <li><a href="learning-modalities.html" data-masterfile-link="learning_modalities"><i class="fas fa-chalkboard"></i> Learning Modalities</a></li>
+                        <li><a href="mother-tongues.html" data-masterfile-link="mother_tongues"><i class="fas fa-language"></i> Mother Tongues</a></li>
+                        <li><a href="notification-types.html" data-masterfile-link="notification_types"><i class="fas fa-bell"></i> Notification Types</a></li>
+                    </ul>
+                </li>
+
+                <li class="nav-item has-submenu">
+                    <a href="#" class="nav-link" id="transactionsToggle">
+                        <i class="fas fa-exchange-alt"></i>
+                        <span>Transactions</span>
+                        <i class="fas fa-chevron-down submenu-icon"></i>
+                    </a>
+                    <ul class="submenu" id="transactionsSubmenu">
+                        <li><a href="../enrollments.html" data-transaction-link="enrollments"><i class="fas fa-user-plus"></i> Enrollments</a></li>
+                        <li><a href="../class-offerings.html" data-transaction-link="class_offerings"><i class="fas fa-clipboard-list"></i> Class Offerings</a></li>
+                        <li><a href="../grading-periods.html" data-transaction-link="grading_periods"><i class="fas fa-calendar-alt"></i> Grading Periods</a></li>
+                        <li><a href="../grades.html" data-transaction-link="grades"><i class="fas fa-chart-bar"></i> Grades</a></li>
+                        <li><a href="../final-grades.html" data-transaction-link="final_grades"><i class="fas fa-certificate"></i> Final Grades</a></li>
+                        <li><a href="../general-averages.html" data-transaction-link="general_averages"><i class="fas fa-percentage"></i> General Averages</a></li>
+                        <li><a href="../section-rankings.html" data-transaction-link="section_rankings"><i class="fas fa-ranking-star"></i> Section Rankings</a></li>
+                        <li><a href="../report-cards.html" data-transaction-link="report_cards"><i class="fas fa-file-alt"></i> Report Cards</a></li>
+                        <li><a href="../risk-assessment.html" data-transaction-link="risk_assessment"><i class="fas fa-exclamation-triangle"></i> Risk Assessment</a></li>
+                        <li><a href="../risk-indicators.html" data-transaction-link="risk_indicators"><i class="fas fa-heartbeat"></i> Risk Indicators</a></li>
+                        <li><a href="../interventions.html" data-transaction-link="interventions"><i class="fas fa-hands-helping"></i> Interventions</a></li>
+                        <li><a href="../family-members.html" data-transaction-link="family_members"><i class="fas fa-home"></i> Family Members</a></li>
+                        <li><a href="../emergency-contacts.html" data-transaction-link="emergency_contacts"><i class="fas fa-phone-alt"></i> Emergency Contacts</a></li>
+                        <li><a href="../announcements.html" data-transaction-link="announcements"><i class="fas fa-bullhorn"></i> Announcements</a></li>
+                    </ul>
+                </li>
+
+                <li class="nav-item">
+                    <a href="../settings.html" class="nav-link">
+                        <i class="fas fa-cog"></i>
+                        <span>Settings</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content" id="mainContent">
+        <!-- Breadcrumb -->
+<!-- Page Header -->
+        <div class="page-header">
+            <div>
+                <h1 class="page-title" id="pageTitle">Intervention Statuses</h1>
+                <p class="page-subtitle" id="pageSubtitle"></p>
+            </div>
+        </div>
+
+        <!-- Data Table Card -->
+        <div class="card">
+            <!-- Table Header -->
+            <div class="table-header-section">
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="searchInput" placeholder="Search..." class="search-input">
+                </div>
+                <button class="btn btn-primary" id="addButton">
+                    <i class="fas fa-plus"></i>
+                    <span id="addButtonLabel">Add Intervention Status</span>
+                </button>
+            </div>
+
+            <!-- Table -->
+            <div class="table-container">
+                <table class="data-table" id="dataTable">
+                    <thead>
+                        <tr id="dataTableHead">
+                            <th>Loading...</th>
+                        </tr>
+                    </thead>
+                    <tbody id="dataTableBody">
+                        <tr>
+                            <td colspan="4" class="text-center">
+                                <div class="loading">
+                                    <i class="fas fa-spinner fa-spin"></i> Loading records...
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            <div class="pagination-section">
+                <div class="pagination-info">
+                    Showing <span id="showingFrom">0</span> to <span id="showingTo">0</span> of <span id="totalRecords">0</span> entries
+                </div>
+                <div class="pagination">
+                    <button class="pagination-btn" id="prevBtn">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <span class="pagination-info">
+                        Page <span id="currentPage">1</span> of <span id="totalPages">1</span>
+                    </span>
+                    <button class="pagination-btn" id="nextBtn">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Add/Edit Modal -->
+    <div class="modal" id="recordModal">
+        <div class="modal-content modal-lg">
+            <div class="modal-header">
+                <h2 class="modal-title" id="modalTitle">Add Record</h2>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="recordForm">
+                    <input type="hidden" id="recordId">
+                    <div id="dynamicFields"></div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="saveRecord()">
+                    <i class="fas fa-save"></i>
+                    <span id="saveButtonText">Save</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <p>&copy; 2026 Department of Education - Republic of the Philippines</p>
+            <p>Academic Monitoring System v1.0</p>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script src="../../assets/js/dashboard.js?v=20260320"></script>
+    <script src="../../js/masterfiles/masterfile-common.js"></script>
+    <script src="../../js/masterfiles/intervention-statuses.js"></script>
+</body>
+</html>

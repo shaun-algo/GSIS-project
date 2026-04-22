@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Learner Attendance - DepEd Academic Monitoring System</title>
+
+    <link rel="stylesheet" href="../assets/css/dashboard.css?v=20260320">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <style>
+        /* Daily SF2 UI (theme-driven; uses existing dashboard variables only) */
+        .att-filters { display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end; }
+        .att-right { margin-left:auto; display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+
+        .att-session { display:inline-flex; border:1px solid var(--gray-300); border-radius: 8px; overflow:hidden; background: var(--gray-50); }
+        .att-session button { border:none; background:transparent; color: var(--gray-600); padding: 8px 14px; font-weight: 600; cursor:pointer; }
+        .att-session button.is-on { background: var(--color-info); color: #fff; }
+
+        .att-table-wrap { overflow-x:auto; }
+        .att-table td, .att-table th { white-space: nowrap; }
+        .att-name { font-weight: 700; color: var(--gray-900); }
+        .att-lrn { font-size: 12px; color: var(--gray-600); }
+
+        .att-sex { display:inline-flex; align-items:center; justify-content:center; min-width: 28px; height: 22px; padding: 0 8px; border-radius: 999px; border: 1px solid var(--gray-300); background: var(--gray-50); font-weight: 800; font-size: 12px; color: var(--gray-700); }
+
+	        .att-pill-present { display:inline-flex; align-items:center; gap:8px; padding: 6px 12px; border-radius: 999px; font-weight: 800; font-size: 12px; color: var(--color-success); border: 1px solid color-mix(in srgb, var(--color-success) 30%, transparent); background: color-mix(in srgb, var(--color-success) 10%, transparent); }
+	        .att-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--color-success); }
+	        .att-pill-absent { display:inline-flex; align-items:center; gap:8px; padding: 6px 12px; border-radius: 999px; font-weight: 800; font-size: 12px; color: var(--color-danger); border: 1px solid color-mix(in srgb, var(--color-danger) 30%, transparent); background: color-mix(in srgb, var(--color-danger) 10%, transparent); }
+	        .att-dot-absent { background: var(--color-danger); }
+	        .att-pill-warn { display:inline-flex; align-items:center; gap:8px; padding: 6px 12px; border-radius: 999px; font-weight: 800; font-size: 12px; color: var(--color-warning); border: 1px solid color-mix(in srgb, var(--color-warning) 30%, transparent); background: color-mix(in srgb, var(--color-warning) 10%, transparent); }
+	        .att-dot-warn { background: var(--color-warning); }
+	        .att-pill-info { display:inline-flex; align-items:center; gap:8px; padding: 6px 12px; border-radius: 999px; font-weight: 800; font-size: 12px; color: var(--color-info); border: 1px solid color-mix(in srgb, var(--color-info) 30%, transparent); background: color-mix(in srgb, var(--color-info) 10%, transparent); }
+	        .att-dot-info { background: var(--color-info); }
+
+	        .att-toggle { display:inline-flex; border: 1px solid var(--gray-300); border-radius: 999px; overflow: hidden; background: var(--gray-50); }
+	        .att-btn { border:none; background:transparent; padding: 7px 12px; font-size: 12px; font-weight: 800; color: var(--gray-600); cursor:pointer; }
+	        .att-btn:hover { background: var(--gray-100); color: var(--gray-900); }
+	        .att-btn.is-active { color: var(--gray-900); background: var(--gray-100); }
+	        .att-btn.is-A { color: var(--color-danger); }
+	        .att-select { border: 1px solid var(--gray-300); border-radius: 999px; background: var(--gray-50); padding: 7px 12px; font-size: 12px; font-weight: 800; color: var(--gray-900); cursor: pointer; }
+	        .att-select:focus { outline: none; box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-info) 20%, transparent); }
+
+        .att-save-ind { display:inline-flex; align-items:center; gap: 8px; color: var(--gray-700); font-size: 13px; }
+        .att-save-ind .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--gray-400); }
+        .att-save-ind.is-dirty .dot { background: var(--color-warning); }
+        .att-save-ind.is-saving .dot { background: var(--color-info); }
+        .att-save-ind.is-saved .dot { background: var(--color-success); }
+
+        @media print {
+            .topbar, .sidebar { display: none !important; }
+            .main-content { margin-left: 0 !important; padding: 0 !important; }
+            .page-header { padding: 0 0 12px 0 !important; }
+            #btnAttPrint, #btnAttSaveTop { display: none !important; }
+            #attSearch { display: none !important; }
+            .card { box-shadow: none !important; }
+            .att-table-wrap { overflow: visible !important; }
+        }
+    </style>
+</head>
+<body>
+    <nav class="topbar">
+        <div class="topbar-left">
+            <button class="menu-toggle" id="menuToggle"><i class="fas fa-bars"></i></button>
+            <div class="logo">
+                <img src="../assets/img/logo/logo.jpg" alt="DepEd Logo" class="logo-img">
+                <div class="logo-text">
+                    <h1>DepEd Academic Monitoring</h1>
+                    <p>Administrative Dashboard</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="topbar-right">
+            <button class="notification-btn" id="notificationBtn">
+                <i class="fas fa-bell"></i>
+                <span class="notification-badge" id="notificationCount" style="display:none">0</span>
+            </button>
+
+            <div class="user-menu">
+                <button class="user-btn" id="userMenuBtn">
+                    <div class="user-avatar"><i class="fas fa-user"></i></div>
+                    <div class="user-info">
+                        <span class="user-name">User</span>
+                        <span class="user-role">—</span>
+                    </div>
+                    <i class="fas fa-chevron-down"></i>
+                </button>
+
+                <div class="user-dropdown" id="userDropdown">
+                    <a href="profile.html"><i class="fas fa-user"></i> Profile</a>
+                    <a href="settings.html"><i class="fas fa-cog"></i> Settings</a>
+                    <hr>
+                    <a href="../logout.php" class="logout"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <aside class="sidebar" id="sidebar">
+        <nav class="sidebar-nav">
+            <ul class="nav-list">
+                <li class="nav-item"><a href="../dashboard/admin_dashboard.html" class="nav-link"><i class="fas fa-home"></i><span>Dashboard</span></a></li>
+
+                <li class="nav-item has-submenu">
+                    <a href="#" class="nav-link" id="masterfilesToggle"><i class="fas fa-folder"></i><span>Masterfiles</span><i class="fas fa-chevron-down submenu-icon"></i></a>
+                    <ul class="submenu" id="masterfilesSubmenu">
+                        <li><a href="masterfiles/users.html" data-masterfile-link="users"><i class="fas fa-users"></i> Users</a></li>
+                        <li><a href="masterfiles/roles.html" data-masterfile-link="roles"><i class="fas fa-user-tag"></i> Roles</a></li>
+                        <li><a href="masterfiles/learners.html" data-masterfile-link="students"><i class="fas fa-user-graduate"></i> Learners</a></li>
+                        <li><a href="masterfiles/employees.html" data-masterfile-link="employees"><i class="fas fa-briefcase"></i> Employees</a></li>
+                        <li><a href="masterfiles/subjects.html" data-masterfile-link="subjects"><i class="fas fa-book"></i> Subjects</a></li>
+                        <li><a href="masterfiles/sections.html" data-masterfile-link="sections"><i class="fas fa-school"></i> Sections</a></li>
+                        <li><a href="masterfiles/school-years.html" data-masterfile-link="school_years"><i class="fas fa-calendar"></i> School Years</a></li>
+                    </ul>
+                </li>
+
+                <li class="nav-item has-submenu open">
+                    <a href="#" class="nav-link active" id="transactionsToggle"><i class="fas fa-exchange-alt"></i><span>Transactions</span><i class="fas fa-chevron-down submenu-icon"></i></a>
+                    <ul class="submenu open" id="transactionsSubmenu">
+                        <li><a href="enrollments.html" data-transaction-link="enrollments"><i class="fas fa-user-plus"></i> Enrollments</a></li>
+                        <li><a href="class-records.html" data-transaction-link="class_records"><i class="fas fa-book"></i> Class Records</a></li>
+                        <li><a href="grading-periods.html" data-transaction-link="grading_periods"><i class="fas fa-calendar-alt"></i> Grading Periods</a></li>
+                        <li><a href="announcements.html" data-transaction-link="announcements"><i class="fas fa-bullhorn"></i> Announcements</a></li>
+                        <li><a href="attendance.html" data-transaction-link="attendance"><i class="fas fa-user-check"></i> Learner Attendance</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </nav>
+    </aside>
+
+    <main class="main-content" id="mainContent">
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">Learner Attendance</h1>
+            </div>
+        </div>
+
+        <div class="card card-overflow-visible" style="margin-bottom: 12px;">
+            <div class="card-header" style="display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap;">
+                <div>
+                    <h2 class="card-title">Daily Attendance</h2>
+                </div>
+
+                <div class="att-right">
+                    <div class="att-save-ind" id="attSaveInd" aria-label="Save state">
+                        <span class="dot"></span>
+                        <span id="attSaveLbl">All saved</span>
+                    </div>
+                    <button class="btn btn-outline" id="btnAttPrint" type="button"><i class="fas fa-download"></i> SF2</button>
+                    <button class="btn btn-primary" id="btnAttSaveTop" type="button"><i class="fas fa-save"></i> Save</button>
+                </div>
+            </div>
+
+            <div class="card-body">
+                <div class="att-filters" style="margin-bottom: 12px;">
+                    <div class="form-group">
+                        <label class="form-label" for="attSchoolYear">School Year</label>
+                        <select class="form-control" id="attSchoolYear"></select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="attSection">Section</label>
+                        <select class="form-control" id="attSection"></select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="attClass">Subject</label>
+                        <select class="form-control" id="attClass"></select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="attPeriod">Grading Period</label>
+                        <select class="form-control" id="attPeriod"></select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="attDate">Date</label>
+                        <input class="form-control" id="attDate" type="date" />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Session</label>
+                        <div class="att-session" role="group" aria-label="Session">
+                            <button type="button" id="btnSessAM" class="is-on">AM</button>
+                            <button type="button" id="btnSessPM">PM</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card" style="border: 1px solid var(--gray-300);">
+                    <div class="card-header" style="display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;">
+                        <h3 class="card-title" id="attCardTitle">Select a section and subject to begin</h3>
+                        <input class="form-control" id="attSearch" type="text" placeholder="Search learner or LRN" style="max-width: 280px;" />
+                    </div>
+                    <div class="att-table-wrap">
+                        <table class="tx-table att-table">
+                            <thead>
+                                <tr>
+                                    <th style="width:46px; text-align:center;">#</th>
+                                    <th>Learner</th>
+                                    <th style="width:160px;">LRN</th>
+                                    <th style="width:80px;">Sex</th>
+                                    <th style="text-align:right;">Attendance</th>
+                                </tr>
+                            </thead>
+                            <tbody id="attTbody">
+                                <tr>
+                                    <td colspan="5" style="padding: 28px; color: var(--gray-600); text-align:center;">Select School Year, Section, and Subject above.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="../assets/js/dashboard.js?v=20260320"></script>
+	    <script src="../js/attendance.js?v=20260424"></script>
+</body>
+</html>

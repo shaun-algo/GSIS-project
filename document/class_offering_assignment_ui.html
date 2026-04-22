@@ -1,0 +1,319 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-sans)}
+.wrap{padding:1.5rem 0;max-width:860px}
+.step-bar{display:flex;align-items:center;gap:0;margin-bottom:2rem}
+.step{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--color-text-secondary)}
+.step.active{color:var(--color-text-primary);font-weight:500}
+.step.done{color:var(--color-text-success)}
+.step-num{width:24px;height:24px;border-radius:50%;border:0.5px solid var(--color-border-secondary);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:500;flex-shrink:0}
+.step.active .step-num{background:var(--color-background-primary);border:1.5px solid var(--color-border-primary)}
+.step.done .step-num{background:var(--color-background-success);border-color:var(--color-border-success);color:var(--color-text-success)}
+.step-line{flex:1;height:0.5px;background:var(--color-border-tertiary);margin:0 8px}
+.panel{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:1.25rem}
+.panel-title{font-size:15px;font-weight:500;margin-bottom:1rem;color:var(--color-text-primary)}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:1rem}
+.field label{font-size:12px;color:var(--color-text-secondary);margin-bottom:4px;display:block}
+select{width:100%}
+.divider{height:0.5px;background:var(--color-border-tertiary);margin:1rem 0}
+.subj-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:8px;margin-top:8px}
+.subj-chip{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:10px 12px;cursor:pointer;user-select:none;transition:border-color .15s,background .15s;position:relative}
+.subj-chip:hover{border-color:var(--color-border-secondary);background:var(--color-background-secondary)}
+.subj-chip.selected{border:1.5px solid var(--color-border-info);background:var(--color-background-info)}
+.subj-chip .code{font-size:11px;font-weight:500;color:var(--color-text-secondary);margin-bottom:2px}
+.subj-chip.selected .code{color:var(--color-text-info)}
+.subj-chip .name{font-size:13px;color:var(--color-text-primary);line-height:1.3}
+.subj-chip.selected .name{color:var(--color-text-info)}
+.chip-check{position:absolute;top:8px;right:8px;width:16px;height:16px;border-radius:50%;background:var(--color-background-info);border:1.5px solid var(--color-border-info);display:none;align-items:center;justify-content:center}
+.subj-chip.selected .chip-check{display:flex}
+.chip-check svg{width:10px;height:10px;stroke:var(--color-text-info);stroke-width:2.5;fill:none}
+.sel-bar{display:flex;align-items:center;justify-content:space-between;margin-top:1rem;padding:10px 12px;background:var(--color-background-secondary);border-radius:var(--border-radius-md);font-size:13px}
+.sel-count{color:var(--color-text-secondary)}
+.sel-count span{font-weight:500;color:var(--color-text-primary)}
+.btn-row{display:flex;gap:8px;justify-content:flex-end;margin-top:1.25rem}
+.btn{padding:8px 18px;border-radius:var(--border-radius-md);font-size:13px;cursor:pointer;font-weight:500;border:0.5px solid var(--color-border-secondary);background:transparent;color:var(--color-text-primary)}
+.btn:hover{background:var(--color-background-secondary)}
+.btn.primary{background:var(--color-background-primary);border:1.5px solid var(--color-border-primary)}
+.btn:disabled{opacity:0.4;cursor:not-allowed}
+.review-table{width:100%;border-collapse:collapse;font-size:13px}
+.review-table th{text-align:left;font-size:12px;font-weight:500;color:var(--color-text-secondary);padding:8px 10px;border-bottom:0.5px solid var(--color-border-tertiary)}
+.review-table td{padding:10px 10px;border-bottom:0.5px solid var(--color-border-tertiary);color:var(--color-text-primary)}
+.review-table tr:last-child td{border-bottom:none}
+.badge{display:inline-flex;padding:2px 8px;border-radius:var(--border-radius-md);font-size:11px;font-weight:500;background:var(--color-background-info);color:var(--color-text-info)}
+.success-box{text-align:center;padding:2.5rem 1rem}
+.success-icon{width:48px;height:48px;border-radius:50%;background:var(--color-background-success);display:inline-flex;align-items:center;justify-content:center;margin-bottom:1rem}
+.success-icon svg{width:24px;height:24px;stroke:var(--color-text-success);stroke-width:2;fill:none}
+.warn{font-size:12px;color:var(--color-text-warning);margin-top:6px}
+.tag-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.tag{font-size:12px;padding:3px 10px;border-radius:var(--border-radius-md);background:var(--color-background-secondary);border:0.5px solid var(--color-border-tertiary);color:var(--color-text-secondary)}
+.search-input{width:100%;padding:7px 10px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);font-size:13px;background:var(--color-background-primary);color:var(--color-text-primary);margin-bottom:10px}
+.search-input:focus{outline:none;border-color:var(--color-border-primary)}
+</style>
+
+<div class="wrap">
+
+<div class="step-bar">
+  <div class="step done" id="s1"><div class="step-num">1</div> School year</div>
+  <div class="step-line"></div>
+  <div class="step active" id="s2"><div class="step-num">2</div> Assign teacher</div>
+  <div class="step-line"></div>
+  <div class="step" id="s3"><div class="step-num">3</div> Select subjects</div>
+  <div class="step-line"></div>
+  <div class="step" id="s4"><div class="step-num">4</div> Review & confirm</div>
+</div>
+
+<div id="page-assign" class="panel">
+  <div class="panel-title">Teacher & section details</div>
+  <div class="row2">
+    <div class="field">
+      <label>School year</label>
+      <select id="sy">
+        <option value="5">2026-2027 (active)</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Grade level</label>
+      <select id="grade" onchange="filterSections()">
+        <option value="">— select grade —</option>
+        <option value="1">Grade 1</option>
+        <option value="2">Grade 2</option>
+        <option value="3">Grade 3</option>
+        <option value="7">Grade 7</option>
+        <option value="8">Grade 8</option>
+        <option value="10">Grade 10</option>
+      </select>
+    </div>
+  </div>
+  <div class="row2">
+    <div class="field">
+      <label>Section</label>
+      <select id="section">
+        <option value="">— select grade first —</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Teacher</label>
+      <select id="teacher">
+        <option value="">— select teacher —</option>
+        <option value="27">jane tejo (Teacher)</option>
+        <option value="28">Neilban Ong (Teacher)</option>
+        <option value="1">Carlo Yulo (Admin)</option>
+        <option value="26">Shaunu Belono-ac (Admin Staff)</option>
+      </select>
+    </div>
+  </div>
+  <div class="btn-row">
+    <button class="btn primary" onclick="goSubjects()">Next: pick subjects</button>
+  </div>
+</div>
+
+<div id="page-subjects" class="panel" style="display:none">
+  <div class="panel-title">Select subjects to assign</div>
+  <input class="search-input" id="subj-search" placeholder="Search subject…" oninput="filterSubjects()" />
+  <div class="subj-grid" id="subj-grid"></div>
+  <div class="sel-bar">
+    <span class="sel-count"><span id="sel-num">0</span> subjects selected</span>
+    <span style="font-size:12px;color:var(--color-text-secondary)">click to toggle</span>
+  </div>
+  <div id="conflict-warn" class="warn" style="display:none"></div>
+  <div class="btn-row">
+    <button class="btn" onclick="backToAssign()">Back</button>
+    <button class="btn primary" id="btn-review" onclick="goReview()" disabled>Review assignment</button>
+  </div>
+</div>
+
+<div id="page-review" class="panel" style="display:none">
+  <div class="panel-title">Review before confirming</div>
+  <div class="row2" style="margin-bottom:1rem">
+    <div>
+      <div style="font-size:12px;color:var(--color-text-secondary);margin-bottom:4px">Teacher</div>
+      <div style="font-size:14px;font-weight:500" id="rv-teacher">—</div>
+    </div>
+    <div>
+      <div style="font-size:12px;color:var(--color-text-secondary);margin-bottom:4px">Section</div>
+      <div style="font-size:14px;font-weight:500" id="rv-section">—</div>
+    </div>
+    <div>
+      <div style="font-size:12px;color:var(--color-text-secondary);margin-bottom:4px">School year</div>
+      <div style="font-size:14px;font-weight:500">2026-2027</div>
+    </div>
+    <div>
+      <div style="font-size:12px;color:var(--color-text-secondary);margin-bottom:4px">Subjects</div>
+      <div style="font-size:14px;font-weight:500" id="rv-count">—</div>
+    </div>
+  </div>
+  <div class="divider"></div>
+  <table class="review-table">
+    <thead><tr>
+      <th>#</th><th>Subject</th><th>Code</th><th>Section</th><th>Status</th>
+    </tr></thead>
+    <tbody id="rv-body"></tbody>
+  </table>
+  <div class="btn-row">
+    <button class="btn" onclick="backToSubjects()">Back</button>
+    <button class="btn primary" onclick="confirm()">Confirm & save all</button>
+  </div>
+</div>
+
+<div id="page-success" class="panel" style="display:none">
+  <div class="success-box">
+    <div class="success-icon"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
+    <div style="font-size:16px;font-weight:500;margin-bottom:8px">Class offerings saved</div>
+    <div style="font-size:13px;color:var(--color-text-secondary);margin-bottom:1.5rem" id="success-msg">—</div>
+    <div class="tag-row" style="justify-content:center" id="success-tags"></div>
+    <div class="btn-row" style="justify-content:center;margin-top:1.5rem">
+      <button class="btn primary" onclick="reset()">Assign another teacher</button>
+      <button class="btn" onclick="sendPrompt('Show me a summary of all class offerings for 2026-2027')">View all offerings ↗</button>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<script>
+const SECTIONS = {
+  '1':['Section Gemini (Grade 1)','Gold (Grade 1)'],
+  '2':['Matapat (Grade 2)'],
+  '3':['Maayos (Grade 3)'],
+  '7':['Rizal (Grade 7)','Bonifacio (Grade 7)'],
+  '8':['Aquarius (Grade 8)'],
+  '10':['test grade 10 (Grade 10)']
+};
+
+const ALL_SUBJECTS = [
+  {id:1,code:'MTB-MLE',name:'Mother Tongue'},
+  {id:2,code:'FIL',name:'Filipino'},
+  {id:3,code:'ENG',name:'English'},
+  {id:4,code:'MATH',name:'Mathematics'},
+  {id:5,code:'AP',name:'Araling Panlipunan'},
+  {id:6,code:'ESP',name:'Edukasyon sa Pagpapakatao'},
+  {id:7,code:'MAPEH',name:'MAPEH'},
+  {id:8,code:'GMRC',name:'Good Manners & Right Conduct'},
+  {id:9,code:'MAKABANSA',name:'Makabansa'},
+  {id:10,code:'SCI',name:'Science'},
+  {id:11,code:'EPP',name:'EPP'},
+  {id:12,code:'TLE',name:'TLE'},
+];
+
+const TEACHER_NAMES = {
+  '27':'Jane Tejo','28':'Neilban Ong','1':'Carlo Yulo','26':'Shaunu Belono-ac'
+};
+
+let selected = new Set();
+let filteredSubjects = [...ALL_SUBJECTS];
+
+function filterSections(){
+  const g = document.getElementById('grade').value;
+  const s = document.getElementById('section');
+  s.innerHTML = g ? (SECTIONS[g]||[]).map((n,i)=>`<option value="${i}">${n}</option>`).join('') : '<option>— select grade first —</option>';
+}
+
+function filterSubjects(){
+  const q = document.getElementById('subj-search').value.toLowerCase();
+  filteredSubjects = ALL_SUBJECTS.filter(s=>s.name.toLowerCase().includes(q)||s.code.toLowerCase().includes(q));
+  renderSubjects();
+}
+
+function renderSubjects(){
+  const grid = document.getElementById('subj-grid');
+  grid.innerHTML = filteredSubjects.map(s=>`
+    <div class="subj-chip${selected.has(s.id)?' selected':''}" onclick="toggle(${s.id})">
+      <div class="chip-check"><svg viewBox="0 0 10 10"><polyline points="1.5 5 4 7.5 8.5 2.5"/></svg></div>
+      <div class="code">${s.code}</div>
+      <div class="name">${s.name}</div>
+    </div>`).join('');
+}
+
+function toggle(id){
+  if(selected.has(id)) selected.delete(id); else selected.add(id);
+  renderSubjects();
+  document.getElementById('sel-num').textContent = selected.size;
+  document.getElementById('btn-review').disabled = selected.size === 0;
+  const warn = document.getElementById('conflict-warn');
+  if(selected.size > 6){
+    warn.style.display='block';
+    warn.textContent = `Warning: assigning ${selected.size} subjects to one teacher in one section is unusually high. Verify the schedule.`;
+  } else { warn.style.display='none'; }
+}
+
+function goSubjects(){
+  const g = document.getElementById('grade').value;
+  const t = document.getElementById('teacher').value;
+  const sec = document.getElementById('section');
+  if(!g||!t||!sec.value&&sec.options.length===0) return;
+  document.getElementById('page-assign').style.display='none';
+  document.getElementById('page-subjects').style.display='';
+  renderSubjects();
+  setStep(3);
+}
+
+function backToAssign(){
+  document.getElementById('page-subjects').style.display='none';
+  document.getElementById('page-assign').style.display='';
+  setStep(2);
+}
+
+function goReview(){
+  const tId = document.getElementById('teacher').value;
+  const sec = document.getElementById('section');
+  const secName = sec.options[sec.selectedIndex]?.text||'—';
+  document.getElementById('rv-teacher').textContent = TEACHER_NAMES[tId]||'—';
+  document.getElementById('rv-section').textContent = secName;
+  document.getElementById('rv-count').textContent = selected.size+' subject'+(selected.size!==1?'s':'');
+  const tbody = document.getElementById('rv-body');
+  tbody.innerHTML = [...selected].map((id,i)=>{
+    const s = ALL_SUBJECTS.find(x=>x.id===id);
+    return `<tr>
+      <td style="color:var(--color-text-secondary)">${i+1}</td>
+      <td>${s.name}</td>
+      <td><span class="badge">${s.code}</span></td>
+      <td style="color:var(--color-text-secondary)">${secName}</td>
+      <td style="color:var(--color-text-success);font-size:12px">Ready to save</td>
+    </tr>`;
+  }).join('');
+  document.getElementById('page-subjects').style.display='none';
+  document.getElementById('page-review').style.display='';
+  setStep(4);
+}
+
+function backToSubjects(){
+  document.getElementById('page-review').style.display='none';
+  document.getElementById('page-subjects').style.display='';
+  setStep(3);
+}
+
+function confirm(){
+  const tId = document.getElementById('teacher').value;
+  const sec = document.getElementById('section');
+  const secName = sec.options[sec.selectedIndex]?.text||'—';
+  document.getElementById('success-msg').textContent =
+    `${selected.size} class offering${selected.size!==1?'s':''} assigned to ${TEACHER_NAMES[tId]} for ${secName} — SY 2026-2027`;
+  const tags = document.getElementById('success-tags');
+  tags.innerHTML = [...selected].map(id=>{
+    const s = ALL_SUBJECTS.find(x=>x.id===id);
+    return `<span class="tag">${s.code} · ${s.name}</span>`;
+  }).join('');
+  document.getElementById('page-review').style.display='none';
+  document.getElementById('page-success').style.display='';
+}
+
+function reset(){
+  selected.clear();
+  document.getElementById('grade').value='';
+  document.getElementById('teacher').value='';
+  filterSections();
+  document.getElementById('subj-search').value='';
+  filteredSubjects=[...ALL_SUBJECTS];
+  document.getElementById('page-success').style.display='none';
+  document.getElementById('page-assign').style.display='';
+  setStep(2);
+}
+
+function setStep(n){
+  [1,2,3,4].forEach(i=>{
+    const el=document.getElementById('s'+i);
+    el.className='step'+(i<n?' done':i===n?' active':'');
+  });
+}
+</script>

@@ -1,0 +1,213 @@
+CAPSTONE RESEARCH 1
+60 PERCENT DEMO GUIDE - SIMPLE PRESENTER SCRIPT
+Project: DepEd Academic Monitoring System
+
+Purpose:
+This script helps you execute a clean demo flow with simple speaking lines, expected outputs, and code evidence.
+
+==================================================
+PART 1. FAST PREP BEFORE START (5 MINUTES)
+==================================================
+1) Use localhost URL only:
+   http://localhost/deped_capstone2/
+
+2) Prepare accounts:
+   - Admin
+   - Registrar or Teacher
+   - Learner (optional)
+
+3) Open browser tabs in this order:
+   - index.html
+   - pages/enrollments.html
+   - pages/grades.html
+   - pages/risk-assessment.html
+   - pages/report-cards.html
+   - pages/profile-security.html
+
+4) Keep DevTools Network tab open to show API responses.
+
+==================================================
+PART 2. SIMPLE LIVE DEMO SCRIPT (WHAT TO SAY)
+==================================================
+
+A) USER MANAGEMENT (SECTION A)
+
+A1. Roles and permissions
+Action:
+- Login as Admin and show full menu.
+- Logout and login as Registrar or Teacher.
+- Show restricted behavior for non-admin.
+
+Say:
+- "Roles are enforced server-side, not only hidden in UI."
+- "The session carries role context and API checks role on each protected endpoint."
+
+Expected output:
+- Different menu access by role
+- Restricted actions blocked for unauthorized user
+
+Code evidence:
+- api/auth/login.php
+- api/auth/me.php
+- api/utils/auth.php
+- assets/js/dashboard.js
+
+A2. Profile update works
+Action:
+- Open profile security page.
+- Reveal masked fields.
+- Update contact number or email and click Save.
+- Refresh and verify saved values.
+
+Say:
+- "The profile page loads current session user, then requests only that user record."
+- "Update endpoint verifies ownership before writing."
+
+Expected output:
+- Save success feedback
+- Data persists after refresh
+
+Code evidence:
+- js/profile-security.js
+- api/employees/employees.php
+
+A3. Account status control
+Action:
+- Deactivate a test user from user management.
+- Attempt login with that account.
+- Reactivate and login again.
+
+Say:
+- "Inactive users are blocked at authentication level."
+
+Expected output:
+- Login blocked while inactive, restored when active
+
+Code evidence:
+- api/users/users.php
+- api/auth/login.php
+
+A4. Session management and timeout
+Action:
+- Explain that every secured request updates session activity.
+- Show a protected request in Network and mention 401 when expired.
+
+Say:
+- "Session freshness is validated by backend auth guard on every call."
+
+Code evidence:
+- api/utils/auth.php
+
+
+B) CORE FUNCTIONAL MODULE FLOW (SECTION B)
+
+Use this chain:
+Enrollment -> Grades -> Risk Assessment -> Report Card
+
+B1. Enrollment
+Action:
+- Create or confirm an enrollment in pages/enrollments.html
+
+Say:
+- "Enrollment writes linked records with validation and safe transaction behavior."
+
+Code evidence:
+- api/enrollments/enrollments.php
+
+B2. Grades
+Action:
+- Open pages/grades.html
+- Encode WW, PT, QE scores
+- Show computed quarterly grade
+
+Say:
+- "Grade logic computes initial grade and applies transmutation rules."
+
+Code evidence:
+- api/grades/grades.php
+
+B3. Risk assessment
+Action:
+- Open pages/risk-assessment.html
+- Show computed risk indicators and level
+
+Say:
+- "Risk engine checks failing grades, trends, attendance, and incomplete data."
+
+Code evidence:
+- api/risk_assessments/risk_assessments.php
+
+B4. Report card output
+Action:
+- Open pages/report-cards.html and show generated result from existing data
+
+Say:
+- "Report cards are built from validated grade records, not hardcoded display."
+
+Code evidence:
+- api/report_cards/report_cards.php
+
+
+C) DATABASE AND ARCHITECTURE (SECTIONS C AND D)
+
+C1. Database relationships
+Say:
+- "Our schema uses normalized tables with PK and FK relationships for data integrity."
+
+Evidence:
+- api/database/dep_ed-2.sql
+
+C2. Transactions and validation
+Say:
+- "Critical operations run in transactions to prevent partial writes."
+- "Input and relationship checks are done in backend before saving."
+
+Evidence:
+- api/enrollments/enrollments.php
+- api/risk_assessments/risk_assessments.php
+
+D1. Frontend to backend integration
+Say:
+- "Pages call API endpoints through Axios with session cookies."
+- "System behavior comes from backend results, not static templates."
+
+Evidence:
+- js/profile-security.js
+- js/class-records.js
+- api/utils/auth.php
+
+
+D2. Interface behavior and feedback (Section E)
+Action:
+- Perform one success action and one error action
+- Show toasts/messages
+
+Say:
+- "The interface gives immediate success and error feedback for user actions."
+
+Evidence:
+- js/profile-security.js
+- js/masterfiles/class-offerings.js
+
+==================================================
+PART 3. QUICK EDGE CASES TO DEMONSTRATE (2-3 ITEMS)
+==================================================
+1) Enter invalid grade outside 0 to 100 and show validation message.
+2) Try unauthorized action using non-admin account and show rejection.
+3) Submit missing required field and show backend validation response.
+
+==================================================
+PART 4. ONE-MINUTE CLOSING SCRIPT
+==================================================
+"Our strongest proof of 60 percent completion is the connected workflow from enrollment to grade computation to risk assessment to report card output, all protected by role-based backend authorization, validation, and transaction-safe operations."
+
+==================================================
+PART 5. LAST MINUTE CHECKLIST
+==================================================
+- Use localhost URL only
+- Verify login works for all demo accounts
+- Verify one learner has active enrollment and grades
+- Keep one backup learner record
+- Refresh pages before defense starts
+
+END OF GUIDE

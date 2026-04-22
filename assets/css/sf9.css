@@ -1,0 +1,193 @@
+/* SF9 (School Form 9) print template styles
+   Scoped to Report Cards page (loaded only there). */
+
+.sf9-print-root {
+    background: #fff;
+    color: #000;
+}
+
+.sf9-page {
+    background: #fff;
+    color: #000;
+    border: 1px solid #000;
+    padding: 24px;
+    margin: 0 auto 16px;
+    max-width: 920px;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 11px;
+    line-height: 1.25;
+}
+
+.sf9-page:last-child {
+    margin-bottom: 0;
+}
+
+.sf9-center { text-align: center; }
+.sf9-right { text-align: right; }
+.sf9-bold { font-weight: 700; }
+.sf9-upper { text-transform: uppercase; }
+
+.sf9-title {
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.sf9-subtitle {
+    font-size: 10px;
+}
+
+.sf9-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px 12px;
+    margin-top: 10px;
+}
+
+.sf9-row {
+    display: grid;
+    grid-template-columns: 110px 1fr;
+    gap: 8px;
+    align-items: end;
+}
+
+.sf9-row .lbl {
+    font-size: 10px;
+}
+
+.sf9-field {
+    min-height: 16px;
+    border-bottom: 1px solid #000;
+    padding: 0 4px 1px;
+}
+
+.sf9-field.inline {
+    display: inline-block;
+    min-width: 160px;
+}
+
+.sf9-section {
+    margin-top: 14px;
+}
+
+.sf9-section-title {
+    font-weight: 700;
+    margin-bottom: 6px;
+}
+
+.sf9-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 10px;
+}
+
+.sf9-table th,
+.sf9-table td {
+    border: 1px solid #000;
+    padding: 4px 6px;
+    vertical-align: middle;
+}
+
+.sf9-table th {
+    font-weight: 700;
+    text-align: center;
+}
+
+.sf9-table td.left {
+    text-align: left;
+}
+
+.sf9-table td.center {
+    text-align: center;
+}
+
+.sf9-small { font-size: 9px; }
+
+.sf9-flex {
+    display: flex;
+    gap: 16px;
+}
+
+.sf9-col {
+    flex: 1;
+    min-width: 0;
+}
+
+.sf9-sign-lines {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+    margin-top: 8px;
+}
+
+.sf9-sign-line {
+    display: grid;
+    grid-template-columns: 80px 1fr;
+    gap: 8px;
+    align-items: center;
+}
+
+.sf9-sign-line .line {
+    border-bottom: 1px solid #000;
+    height: 16px;
+}
+
+.sf9-footer-note {
+    margin-top: 10px;
+    font-size: 9px;
+}
+
+/* Print rules: print ONLY the SF9 content */
+@media print {
+    @page {
+        size: letter;
+        margin: 0.5in;
+    }
+
+    body {
+        background: #fff !important;
+    }
+
+    .topbar,
+    .sidebar,
+    .page-header,
+    .card,
+    .footer,
+    #recordModal,
+    #sf9Modal .modal-header,
+    #sf9Modal .modal-footer {
+        display: none !important;
+    }
+
+    #sf9Modal {
+        display: block !important;
+        position: static !important;
+        padding: 0 !important;
+        background: none !important;
+        overflow: visible !important;
+    }
+
+    #sf9Modal .modal-content {
+        max-width: none !important;
+        max-height: none !important;
+        box-shadow: none !important;
+        border-radius: 0 !important;
+    }
+
+    #sf9Modal .modal-body {
+        padding: 0 !important;
+        background: #fff !important;
+        overflow: visible !important;
+    }
+
+    .sf9-page {
+        border: none !important;
+        margin: 0 !important;
+        max-width: none !important;
+        padding: 0 !important;
+        page-break-after: always;
+    }
+
+    .sf9-page:last-child {
+        page-break-after: auto;
+    }
+}

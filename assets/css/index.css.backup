@@ -1,0 +1,508 @@
+/* ===========================
+   Login Page - Professional DepEd UI
+   =========================== */
+
+:root {
+    --deped-blue: #0055A4;
+    --deped-blue-dark: #004482;
+    --deped-blue-light: #CCE1FF;
+    --deped-gold: #FFB81C;
+    --success-green: #28A745;
+    --gray-900: #1a1a1a;
+    --gray-800: #2d2d2d;
+    --gray-700: #4a4a4a;
+    --gray-600: #6b6b6b;
+    --gray-500: #8f8f8f;
+    --gray-400: #b3b3b3;
+    --gray-300: #d4d4d4;
+    --gray-200: #e8e8e8;
+    --gray-100: #f5f5f5;
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.12);
+    --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.15);
+    --shadow-xl: 0 20px 40px rgba(0, 0, 0, 0.2);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+.login-page {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Background Styling */
+.login-background {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 0;
+    background: linear-gradient(135deg, #0055A4 0%, #003d7a 50%, #002952 100%);
+}
+
+.bg-pattern {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image:
+        radial-gradient(circle at 20% 50%, rgba(255, 184, 28, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.05) 0%, transparent 50%),
+        radial-gradient(circle at 40% 20%, rgba(255, 255, 255, 0.03) 0%, transparent 50%);
+    background-size: 100% 100%;
+}
+
+.bg-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg width="60" height="60" xmlns="http://www.w3.org/2000/svg"><rect width="1" height="1" x="29.5" y="29.5" fill="rgba(255,255,255,0.05)"/></svg>');
+    opacity: 0.3;
+}
+
+.login-container {
+    width: 100%;
+    max-width: 480px;
+    position: relative;
+    z-index: 1;
+}
+
+.login-card {
+    background: white;
+    border-radius: 20px;
+    box-shadow: var(--shadow-xl);
+    padding: 3rem 2.5rem;
+    backdrop-filter: blur(10px);
+    opacity: 0;
+    transform: scale(0.9);
+    transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.login-card.is-visible {
+    opacity: 1;
+    transform: scale(1);
+}
+
+/* Header Styling */
+.login-header {
+    text-align: center;
+    margin-bottom: 2.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 2px solid var(--gray-100);
+}
+
+.login-logo {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.school-logo {
+    width: 85px;
+    height: 85px;
+    object-fit: contain;
+    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.1));
+    animation: logoFloat 3s ease-in-out infinite;
+}
+
+.deped-text-logo {
+    max-width: 100%;
+    height: auto;
+    max-height: 80px;
+    object-fit: contain;
+    margin-bottom: 1rem;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+}
+
+@keyframes logoFloat {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-5px); }
+}
+
+.login-header h2 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--gray-700);
+    margin-bottom: 0.5rem;
+}
+
+.login-subtitle {
+    font-size: 0.9rem;
+    color: var(--gray-600);
+    font-weight: 500;
+    margin-top: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Form Styling */
+.login-form .form-group {
+    margin-bottom: 1.5rem;
+}
+
+.login-form label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--gray-700);
+    margin-bottom: 0.5rem;
+}
+
+.login-form label i {
+    color: var(--deped-blue);
+    font-size: 0.95rem;
+}
+
+.input-wrapper {
+    position: relative;
+}
+
+.input-wrapper i {
+    position: absolute;
+    top: 50%;
+    left: 1rem;
+    transform: translateY(-50%);
+    color: var(--gray-400);
+    font-size: 1rem;
+    z-index: 1;
+}
+
+.input-wrapper input {
+    width: 100%;
+    padding: 0.85rem 1rem 0.85rem 2.75rem;
+    border-radius: 12px;
+    border: 2px solid var(--gray-200);
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
+    background: var(--gray-50);
+    font-weight: 500;
+}
+
+.input-wrapper input:focus {
+    outline: none;
+    border-color: var(--deped-blue);
+    background: white;
+    box-shadow: 0 0 0 4px rgba(0, 85, 164, 0.1);
+}
+
+.toggle-password {
+    position: absolute;
+    right: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: var(--gray-400);
+    cursor: pointer;
+    padding: 0.5rem;
+    font-size: 1rem;
+    transition: color 0.2s ease;
+}
+
+.toggle-password:hover {
+    color: var(--deped-blue);
+}
+
+/* Login Options */
+.login-options {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 1rem 0 1.5rem;
+    font-size: 0.85rem;
+}
+
+.remember-me {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--gray-600);
+    cursor: pointer;
+    user-select: none;
+}
+
+.remember-me input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    accent-color: var(--deped-blue);
+}
+
+.remember-me:hover {
+    color: var(--gray-800);
+}
+
+.forgot-link {
+    color: var(--deped-blue);
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.forgot-link:hover {
+    color: var(--deped-blue-dark);
+    text-decoration: underline;
+}
+
+/* Button Styling */
+.btn {
+    padding: 0.85rem 1.5rem;
+    border: none;
+    border-radius: 12px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, var(--deped-blue) 0%, var(--deped-blue-dark) 100%);
+    color: white;
+    box-shadow: 0 4px 15px rgba(0, 85, 164, 0.3);
+}
+
+.btn-primary:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 85, 164, 0.4);
+}
+
+.btn-primary:active:not(:disabled) {
+    transform: translateY(0);
+}
+
+.btn-primary:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+.btn-block {
+    width: 100%;
+}
+
+/* Ripple Effect */
+.ripple {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.6);
+    transform: scale(0);
+    animation: ripple-animation 0.6s ease-out;
+    pointer-events: none;
+}
+
+@keyframes ripple-animation {
+    to {
+        transform: scale(4);
+        opacity: 0;
+    }
+}
+
+/* Divider */
+.login-divider {
+    text-align: center;
+    margin: 1.5rem 0;
+    position: relative;
+}
+
+.login-divider::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: var(--gray-200);
+}
+
+.login-divider span {
+    position: relative;
+    background: white;
+    padding: 0 1rem;
+    font-size: 0.75rem;
+    color: var(--gray-500);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Footer Styling */
+.login-footer {
+    margin-top: 2rem;
+    text-align: center;
+    padding-top: 1.5rem;
+    border-top: 2px solid var(--gray-100);
+}
+
+.footer-badges {
+    display: flex;
+    justify-content: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+}
+
+.footer-badges .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.4rem 0.75rem;
+    background: var(--deped-blue-light);
+    color: var(--deped-blue-dark);
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.footer-badges .badge i {
+    font-size: 0.7rem;
+}
+
+.footer-text {
+    font-size: 0.8rem;
+    color: var(--gray-600);
+    line-height: 1.6;
+}
+
+.footer-text strong {
+    color: var(--deped-blue);
+    font-weight: 700;
+}
+
+.footer-text small {
+    font-size: 0.7rem;
+    color: var(--gray-500);
+}
+
+/* Info Card */
+.info-card {
+    margin-top: 1.5rem;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 16px;
+    padding: 1.25rem;
+    box-shadow: var(--shadow-lg);
+    display: flex;
+    justify-content: space-around;
+    gap: 1rem;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    transition-delay: 0.2s;
+}
+
+.info-card.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.info-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+    color: var(--gray-700);
+    font-weight: 500;
+}
+
+.info-item i {
+    color: var(--deped-blue);
+    font-size: 1.1rem;
+}
+
+/* Spinner Animation */
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.fa-spinner {
+    animation: spin 1s linear infinite;
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 576px) {
+    .login-page {
+        padding: 1rem;
+    }
+
+    .login-card {
+        padding: 2rem 1.5rem;
+    }
+
+    .login-header h2 {
+        font-size: 1rem;
+    }
+
+    .school-logo {
+        width: 65px;
+        height: 65px;
+    }
+
+    .deped-text-logo {
+        max-height: 60px;
+    }
+
+    .login-logo {
+        gap: 1rem;
+    }
+
+    .info-card {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .info-item {
+        justify-content: center;
+    }
+}
+
+@media (max-width: 400px) {
+    .login-card {
+        padding: 1.5rem 1rem;
+    }
+
+    .school-logo {
+        width: 55px;
+        height: 55px;
+    }
+
+    .deped-text-logo {
+        max-height: 50px;
+    }
+
+    .footer-badges {
+        gap: 0.5rem;
+    }
+
+    .footer-badges .badge {
+        font-size: 0.7rem;
+        padding: 0.35rem 0.6rem;
+    }
+}

@@ -1,0 +1,71 @@
+Cagayan de Oro College | College of Information Technology Education
+CAPSTONE / RESEARCH 1
+60% SYSTEM DEVELOPMENT COMPLETION CHECKLIST
+Detailed implementation and demo flow guide: CHECKLIST_60_PERCENT_COMPLETION_GUIDE.md
+Student / Group: __________________________
+Project Title: __________________________
+Adviser: __________________________
+Date Evaluated: __________________________
+A. ENHANCED USER MANAGEMENT MODULE (10 POINTS)
+No. Functional Requirement ✔ Points
+1 User roles fully integrated across all modules ☐ 2
+2 Dynamic user permissions enforced in workflows ☐ 2
+3 User profile management (view/update) functional ☐ 2
+4 Account status control (activate/deactivate) implemented ☐ 2
+5 Session timeout and user activity tracking implemented ☐ 2
+SUBTOTAL _____ / 10
+
+B. EXPANDED CORE FUNCTIONAL MODULE (25 POINTS)
+No. Functional Requirement ✔ Points
+6 All major system modules are developed (not partial) ☐ 5
+7 Complete workflows across modules are operational ☐ 5
+8 Complex business logic implemented (beyond basic CRUD) ☐ 5
+9 System handles multiple transactions correctly ☐ 3
+10 Data flow between modules is seamless and consistent ☐ 3
+11 Edge cases and alternative flows handled ☐ 2
+12 No redundant or unused features in the system ☐ 2
+SUBTOTAL _____ / 25
+
+C. ADVANCED DATABASE IMPLEMENTATION (10 POINTS)
+No. Functional Requirement ✔ Points
+13 Database design supports full system requirements ☐ 2
+14 Complex relationships (1:M, M:N) implemented correctly ☐ 2
+15 Transactions and data consistency properly handled ☐ 2
+16 Data validation enforced at database and backend levels ☐ 2
+17 Database supports real-time system operations ☐ 2
+SUBTOTAL _____ / 10
+
+D. SYSTEM ARCHITECTURE & MODULE INTEGRATION (10 POINTS)
+No. Functional Requirement ✔ Points
+18 System architecture reflects actual implementation ☐ 2
+19 Frontend, backend, and database fully connected ☐ 2
+20 APIs / controllers properly handling requests ☐ 2
+21 Modular structure (separation of concerns) applied ☐ 2
+22 Navigation across modules is seamless and logical ☐ 2
+SUBTOTAL _____ / 10
+
+E. INTERFACE FUNCTIONALITY & USER INTERACTION (5 POINTS)
+No. Functional Requirement ✔ Points
+23 All forms fully functional and connected to backend ☐ 1
+24 Dynamic content updates (no static-only pages) ☐ 1
+25 System provides correct feedback for user actions ☐ 1
+26 Error handling integrated within user workflows ☐ 1
+
+27 Interface supports actual system operations (not demo-only) ☐ 1
+SUBTOTAL _____ / 5
+
+SUMMARY OF SCORES
+Category Maximum Points Score
+User Management 10 ____
+Core Functional Module 25 ____
+Database Implementation 10 ____
+Architecture & Integration 10 ____
+Interface Functionality 5 ____
+TOTAL 60 ____
+
+ADVISER CERTIFICATION
+☐ I certify that the group has completed at least sixty percent (60%) of the functional system
+development requirements as verified through live demonstration.
+
+Signature : ____________________________
+Date: _________________________________

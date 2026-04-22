@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings - DepEd Academic Monitoring System</title>
+
+    <link rel="stylesheet" href="../assets/css/dashboard.css?v=20260320">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+<body>
+    <nav class="topbar">
+        <div class="topbar-left">
+            <button class="menu-toggle" id="menuToggle">
+                <i class="fas fa-bars"></i>
+            </button>
+            <div class="logo">
+                <img src="../assets/img/logo/logo.jpg" alt="DepEd Logo" class="logo-img">
+                <div class="logo-text">
+                    <h1>DepEd Academic Monitoring</h1>
+                    <p>Administrative Dashboard</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="topbar-right">
+            <div class="user-menu">
+                <button class="user-btn" id="userMenuBtn">
+                    <div class="user-avatar">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div class="user-info">
+                        <span class="user-name">User</span>
+                        <span class="user-role">Role</span>
+                    </div>
+                    <i class="fas fa-chevron-down"></i>
+                </button>
+
+                <div class="user-dropdown" id="userDropdown">
+                    <a href="profile.html"><i class="fas fa-user"></i> Profile</a>
+                    <hr>
+                    <a href="../logout.php" class="logout"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <aside class="sidebar" id="sidebar">
+        <nav class="sidebar-nav">
+            <ul class="nav-list">
+                <li class="nav-item">
+                    <a href="../dashboard/admin_dashboard.html" class="nav-link">
+                        <i class="fas fa-home"></i>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+
+                <li class="nav-item has-submenu">
+                    <a href="#" class="nav-link" id="masterfilesToggle">
+                        <i class="fas fa-folder"></i>
+                        <span>Masterfiles</span>
+                        <i class="fas fa-chevron-down submenu-icon"></i>
+                    </a>
+                    <ul class="submenu" id="masterfilesSubmenu">
+                        <li><a href="masterfiles/learners.html" data-masterfile-link="learner_registration"><i class="fas fa-user-graduate"></i> Learners</a></li>
+                        <li><a href="masterfiles/employees.html" data-masterfile-link="employees"><i class="fas fa-briefcase"></i> Employees</a></li>
+                    </ul>
+                </li>
+
+                <li class="nav-item has-submenu">
+                    <a href="#" class="nav-link" id="transactionsToggle">
+                        <i class="fas fa-exchange-alt"></i>
+                        <span>Transactions</span>
+                        <i class="fas fa-chevron-down submenu-icon"></i>
+                    </a>
+                    <ul class="submenu" id="transactionsSubmenu">
+                        <li><a href="enrollments.html" data-transaction-link="enrollments"><i class="fas fa-user-plus"></i> Enrollments</a></li>
+                    </ul>
+                </li>
+
+                <li class="nav-item">
+                    <a href="settings.html" class="nav-link active">
+                        <i class="fas fa-cog"></i>
+                        <span>Settings</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </aside>
+
+    <main class="main-content" id="mainContent">
+<div class="page-header">
+            <div>
+                <h1 class="page-title">Settings</h1>
+                <p class="page-subtitle">Adjust system preferences</p>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <div class="form-group" style="max-width: 420px;">
+                    <label for="uiScaleSelect">UI Size</label>
+                    <select id="uiScaleSelect" class="form-control" aria-label="UI Size">
+                        <option value="small">Small</option>
+                        <option value="medium">Medium</option>
+                        <option value="large">Large</option>
+                    </select>
+                    <div style="margin-top: 0.5rem; color: var(--gray-600); font-size: 0.9rem;">
+                        Changes apply immediately and are saved on this device.
+                    </div>
+                </div>
+
+                <div class="form-group" style="max-width: 420px; margin-top: 1.25rem;">
+                    <label>Dark Mode</label>
+                    <div style="display:flex; align-items:center; gap: 0.75rem; margin-top: 0.25rem;">
+                        <button type="button" class="btn btn-outline" id="darkModeBtn" aria-pressed="false">
+                            <i class="fas fa-moon"></i>
+                            <span>Enable Dark Mode</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="footer-content">
+            <p>&copy; 2026 Department of Education - Republic of the Philippines</p>
+            <p>Academic Monitoring System v1.0</p>
+        </div>
+    </footer>
+
+    <script src="../assets/js/dashboard.js?v=20260320"></script>
+</body>
+</html>

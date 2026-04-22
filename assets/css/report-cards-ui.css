@@ -1,0 +1,528 @@
+/* Report Cards (Student list UI) */
+
+.rc-hero {
+    background: linear-gradient(135deg, var(--deped-blue) 0%, var(--deped-blue-dark) 70%);
+    color: #fff;
+    border-radius: 0.75rem;
+    padding: 1.25rem 1.25rem 0;
+    box-shadow: var(--shadow);
+}
+
+.rc-breadcrumb {
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.rc-title {
+    margin-top: 0.35rem;
+    font-size: 1.55rem;
+    font-weight: 800;
+}
+
+.rc-sub {
+    margin-top: 0.25rem;
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.75);
+}
+
+.rc-hero-stats {
+    margin-top: 1rem;
+    display: grid;
+    grid-template-columns: repeat(5, minmax(120px, 1fr));
+    border-top: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+.rc-stat {
+    padding: 0.9rem 0.9rem;
+    border-right: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.rc-stat:last-child {
+    border-right: none;
+}
+
+.rc-stat-n {
+    font-size: 1.35rem;
+    font-weight: 800;
+    line-height: 1;
+}
+
+.rc-stat-l {
+    margin-top: 0.25rem;
+    font-size: 0.7rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.65);
+}
+
+.rc-controls {
+    margin-top: 0.9rem;
+    display: flex;
+    gap: 0.6rem;
+    align-items: center;
+    flex-wrap: wrap;
+    background: var(--surface-0);
+    border: 1px solid var(--gray-200);
+    border-radius: 0.75rem;
+    padding: 0.75rem;
+    box-shadow: var(--shadow-sm);
+}
+
+.rc-controls select,
+.rc-controls input {
+    width: auto;
+    min-height: var(--control-min-height);
+    padding: var(--control-padding-y) var(--control-padding-x);
+    border: 1px solid var(--gray-300);
+    border-radius: 0.5rem;
+    background: var(--surface-0);
+    color: var(--gray-900);
+    font-size: var(--control-font-size);
+}
+
+.rc-controls input {
+    flex: 1;
+    min-width: 220px;
+}
+
+.rc-main {
+    margin-top: 0.9rem;
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    gap: 0.9rem;
+}
+
+.rc-student-list {
+    background: var(--surface-0);
+    border: 1px solid var(--gray-200);
+    border-radius: 0.75rem;
+    overflow: hidden;
+}
+
+.rc-list-header {
+    padding: 0.75rem 0.9rem;
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--gray-500);
+    border-bottom: 1px solid var(--gray-200);
+    background: var(--gray-50);
+}
+
+.rc-student-items {
+    max-height: calc(100vh - 310px);
+    overflow: auto;
+}
+
+.rc-student-item {
+    display: flex;
+    gap: 0.7rem;
+    align-items: center;
+    padding: 0.75rem 0.9rem;
+    border-bottom: 1px solid var(--gray-100);
+    cursor: pointer;
+}
+
+.rc-student-item:hover {
+    background: var(--gray-50);
+}
+
+.rc-student-item.active {
+    background: rgba(0, 85, 164, 0.08);
+    border-left: 3px solid var(--deped-blue);
+}
+
+.rc-avatar {
+    width: 38px;
+    height: 38px;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    color: var(--deped-blue);
+    background: var(--deped-blue-light);
+    flex: 0 0 auto;
+}
+
+.rc-stu-meta {
+    min-width: 0;
+    flex: 1;
+}
+
+.rc-stu-name {
+    font-size: 0.92rem;
+    font-weight: 700;
+    color: var(--gray-900);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.rc-stu-lrn {
+    margin-top: 0.15rem;
+    font-size: 0.78rem;
+    color: var(--gray-500);
+}
+
+.rc-stu-gwa {
+    font-weight: 900;
+    font-size: 0.95rem;
+}
+
+.rc-gwa-pass { color: var(--color-success); }
+.rc-gwa-warn { color: var(--color-warning); }
+.rc-gwa-fail { color: var(--color-danger); }
+
+.rc-content {
+    background: var(--surface-0);
+    border: 1px solid var(--gray-200);
+    border-radius: 0.75rem;
+    padding: 1rem;
+    overflow: hidden;
+}
+
+.rc-empty {
+    padding: 2.25rem 1rem;
+    text-align: center;
+    color: var(--gray-500);
+}
+
+.rc-student-header {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.9rem;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    border: 1px solid var(--gray-200);
+    border-radius: 0.75rem;
+    padding: 1rem;
+    background: var(--gray-50);
+}
+
+.rc-student-header-left {
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+    min-width: 260px;
+}
+
+.rc-student-header-name {
+    font-size: 1.15rem;
+    font-weight: 900;
+    color: var(--gray-900);
+}
+
+.rc-student-header-sub {
+    margin-top: 0.25rem;
+    font-size: 0.82rem;
+    color: var(--gray-600);
+    display: flex;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+}
+
+.rc-chip {
+    padding: 0.1rem 0.5rem;
+    border-radius: 999px;
+    border: 1px solid var(--gray-200);
+    background: var(--surface-0);
+}
+
+.rc-grade-table-wrap {
+    margin-top: 0.9rem;
+    border: 1px solid var(--gray-200);
+    border-radius: 0.75rem;
+    overflow: hidden;
+}
+
+.rc-grade-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+}
+
+.rc-grade-table thead th {
+    background: var(--gray-50);
+    color: var(--gray-600);
+    font-size: 0.75rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 0.6rem 0.7rem;
+    border-bottom: 1px solid var(--gray-200);
+}
+
+.rc-grade-table td {
+    padding: 0.65rem 0.7rem;
+    border-bottom: 1px solid var(--gray-100);
+    color: var(--gray-900);
+}
+
+.rc-grade-table tbody tr:hover td {
+    background: var(--gray-50);
+}
+
+.rc-grade-table td.center,
+.rc-grade-table th.center {
+    text-align: center;
+}
+
+.rc-pill {
+    display: inline-block;
+    padding: 0.15rem 0.55rem;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 800;
+    border: 1px solid var(--gray-200);
+}
+
+.rc-pill.pass {
+    color: #065F46;
+    background: #D1FAE5;
+    border-color: #A7F3D0;
+}
+
+.rc-pill.fail {
+    color: #991B1B;
+    background: #FEE2E2;
+    border-color: #FECACA;
+}
+
+/* Additional classes for the new interface */
+.rc-student-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
+    flex-shrink: 0;
+    color: #fff;
+}
+
+.rc-student-avatar-large {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    font-weight: 700;
+    flex-shrink: 0;
+    color: #fff;
+    margin-bottom: 8px;
+}
+
+.rc-student-info {
+    min-width: 0;
+    flex: 1;
+}
+
+.rc-student-name {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--gray-900);
+}
+
+.rc-student-name-large {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--gray-900);
+    line-height: 1.2;
+}
+
+.rc-student-meta {
+    font-size: 12px;
+    color: var(--gray-500);
+    margin-top: 4px;
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.rc-student-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.rc-student-gwa {
+    font-size: 13px;
+    font-weight: 700;
+    margin-left: auto;
+    flex-shrink: 0;
+}
+
+.rc-empty-message {
+    padding: 2rem 1rem;
+    text-align: center;
+    color: var(--gray-500);
+    font-size: 0.9rem;
+}
+
+.rc-error {
+    padding: 2rem 1rem;
+    text-align: center;
+    color: #991B1B;
+    font-size: 0.9rem;
+}
+
+.rc-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 10px;
+    margin: 1.25rem 0;
+}
+
+.rc-stat-card {
+    background: var(--surface-0);
+    border: 1px solid var(--gray-200);
+    border-radius: 0.5rem;
+    padding: 14px 16px;
+    text-align: center;
+}
+
+.rc-stat-label {
+    font-size: 11px;
+    color: var(--gray-500);
+    margin-bottom: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.rc-stat-value {
+    font-size: 22px;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.rc-stat-desc {
+    font-size: 11px;
+    margin-top: 3px;
+    color: var(--gray-500);
+}
+
+.rc-grades-section {
+    margin-top: 1.25rem;
+    background: var(--surface-0);
+    border: 1px solid var(--gray-200);
+    border-radius: 0.75rem;
+    overflow: hidden;
+}
+
+.rc-grades-section h3 {
+    margin: 0;
+    padding: 1rem;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--gray-900);
+    border-bottom: 1px solid var(--gray-200);
+}
+
+.rc-grades-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+
+.rc-grades-table th {
+    background: var(--gray-50);
+    color: var(--gray-600);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--gray-200);
+    text-align: center;
+}
+
+.rc-grades-table th:first-child {
+    text-align: left;
+}
+
+.rc-grades-table td {
+    padding: 11px 16px;
+    border-bottom: 1px solid var(--gray-100);
+    color: var(--gray-900);
+    vertical-align: middle;
+}
+
+.rc-grades-table tr:last-child td {
+    border-bottom: none;
+}
+
+.rc-grades-table tr:hover td {
+    background: var(--gray-50);
+}
+
+.subject-name {
+    font-weight: 500;
+}
+
+.grade-cell {
+    text-align: center;
+    font-family: monospace;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.grade-cell.final {
+    font-weight: 700;
+    font-size: 14px;
+}
+
+.remark-cell {
+    text-align: center;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 20px;
+}
+
+.remark-cell.pass {
+    color: #065F46;
+    background: #D1FAE5;
+}
+
+.remark-cell.fail {
+    color: #991B1B;
+    background: #FEE2E2;
+}
+
+/* GWA Status Classes */
+.gwa-outstanding { color: #065F46; }
+.gwa-very-satisfactory { color: #065F46; }
+.gwa-satisfactory { color: #1E40AF; }
+.gwa-fairly-satisfactory { color: #B45309; }
+.gwa-did-not-meet { color: #991B1B; }
+
+.status-pass { color: #065F46; }
+.status-fail { color: #991B1B; }
+
+/* Avatar color classes */
+.av-blue { background: #DBEAFE; color: #1E40AF; }
+.av-green { background: #DCFCE7; color: #166534; }
+.av-amber { background: #FEF3C7; color: #92400E; }
+.av-rose { background: #FCE7F3; color: #9D174D; }
+.av-purple { background: #EDE9FE; color: #5B21B6; }
+.av-teal { background: #CCFBF1; color: #0F766E; }
+
+@media (max-width: 1100px) {
+    .rc-hero-stats {
+        grid-template-columns: repeat(2, minmax(140px, 1fr));
+    }
+    .rc-main {
+        grid-template-columns: 1fr;
+    }
+    .rc-student-items {
+        max-height: 320px;
+    }
+    .rc-stats-grid {
+        grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    }
+}

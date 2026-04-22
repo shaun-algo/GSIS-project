@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile - DepEd Academic Monitoring System</title>
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="../assets/css/dashboard.css?v=20260320">
+    <link rel="stylesheet" href="../assets/css/modal.css">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Axios -->
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+<body>
+    <!-- Top Navigation Bar -->
+    <nav class="topbar">
+        <div class="topbar-left">
+            <button class="menu-toggle" id="menuToggle">
+                <i class="fas fa-bars"></i>
+            </button>
+            <div class="logo">
+                <img src="../assets/img/logo/logo.jpg" alt="DepEd Logo" class="logo-img">
+                <div class="logo-text">
+                    <h1>DepEd Academic Monitoring</h1>
+                    <p>Administrative Dashboard</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="topbar-right">
+            <button class="notification-btn" id="notificationBtn">
+                <i class="fas fa-bell"></i>
+                <span class="notification-badge">3</span>
+            </button>
+
+            <div class="user-menu">
+                <button class="user-btn" id="userMenuBtn">
+                    <div class="user-avatar">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div class="user-info">
+                        <span class="user-name">Admin User</span>
+                        <span class="user-role">Administrator</span>
+                    </div>
+                    <i class="fas fa-chevron-down"></i>
+                </button>
+
+                <div class="user-dropdown" id="userDropdown">
+                    <a href="profile.html"><i class="fas fa-user"></i> Profile</a>
+                    <a href="settings.html"><i class="fas fa-cog"></i> Settings</a>
+                    <hr>
+                    <a href="../logout.php" class="logout"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar" id="sidebar">
+        <nav class="sidebar-nav">
+            <ul class="nav-list">
+                <li class="nav-item">
+                    <a href="../dashboard/admin_dashboard.html" class="nav-link">
+                        <i class="fas fa-home"></i>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+
+                <li class="nav-item has-submenu">
+                    <a href="#" class="nav-link" id="masterfilesToggle">
+                        <i class="fas fa-folder"></i>
+                        <span>Masterfiles</span>
+                        <i class="fas fa-chevron-down submenu-icon"></i>
+                    </a>
+                    <ul class="submenu" id="masterfilesSubmenu">
+                        <li><a href="masterfiles/users.html" data-masterfile-link="users"><i class="fas fa-users"></i> Users</a></li>
+                        <li><a href="masterfiles/roles.html" data-masterfile-link="roles"><i class="fas fa-user-tag"></i> Roles</a></li>
+                        <li><a href="masterfiles/learners.html" data-masterfile-link="students"><i class="fas fa-user-graduate"></i> Learners</a></li>
+                        <li><a href="masterfiles/employees.html" data-masterfile-link="employees"><i class="fas fa-briefcase"></i> Employees</a></li>
+                    </ul>
+                </li>
+
+                <li class="nav-item has-submenu">
+                    <a href="#" class="nav-link" id="transactionsToggle">
+                        <i class="fas fa-exchange-alt"></i>
+                        <span>Transactions</span>
+                        <i class="fas fa-chevron-down submenu-icon"></i>
+                    </a>
+                    <ul class="submenu" id="transactionsSubmenu">
+                        <li><a href="enrollments.html" data-transaction-link="enrollments"><i class="fas fa-user-plus"></i> Enrollments</a></li>
+                        <li><a href="class-offerings.html" data-transaction-link="class_offerings"><i class="fas fa-clipboard-list"></i> Class Offerings</a></li>
+                        <li><a href="grading-periods.html" data-transaction-link="grading_periods"><i class="fas fa-calendar-alt"></i> Grading Periods</a></li>
+                        <li><a href="grades.html" data-transaction-link="grades"><i class="fas fa-chart-bar"></i> Grades</a></li>
+                        <li><a href="final-grades.html" data-transaction-link="final_grades"><i class="fas fa-certificate"></i> Final Grades</a></li>
+                        <li><a href="general-averages.html" data-transaction-link="general_averages"><i class="fas fa-percentage"></i> General Averages</a></li>
+                        <li><a href="section-rankings.html" data-transaction-link="section_rankings"><i class="fas fa-ranking-star"></i> Section Rankings</a></li>
+                        <li><a href="report-cards.html" data-transaction-link="report_cards"><i class="fas fa-file-alt"></i> Report Cards</a></li>
+                        <li><a href="risk-assessment.html" data-transaction-link="risk_assessment"><i class="fas fa-exclamation-triangle"></i> Risk Assessment</a></li>
+                        <li><a href="risk-indicators.html" data-transaction-link="risk_indicators"><i class="fas fa-heartbeat"></i> Risk Indicators</a></li>
+                        <li><a href="interventions.html" data-transaction-link="interventions"><i class="fas fa-hands-helping"></i> Interventions</a></li>
+                        <li><a href="family-members.html" data-transaction-link="family_members"><i class="fas fa-home"></i> Family Members</a></li>
+                        <li><a href="emergency-contacts.html" data-transaction-link="emergency_contacts"><i class="fas fa-phone-alt"></i> Emergency Contacts</a></li>
+                        <li><a href="announcements.html" data-transaction-link="announcements"><i class="fas fa-bullhorn"></i> Announcements</a></li>
+                    </ul>
+                </li>
+
+                <li class="nav-item">
+                    <a href="settings.html" class="nav-link">
+                        <i class="fas fa-cog"></i>
+                        <span>Settings</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content" id="mainContent">
+<section class="profile-hero">
+            <div class="profile-cover"></div>
+            <div class="profile-header">
+                <div class="profile-avatar" id="profileAvatar">AU</div>
+                <div class="profile-info">
+                    <h1 id="profileName">Admin User</h1>
+                    <p id="profileRole">Administrator</p>
+                    <p class="profile-about-text" style="margin-top: 0.15rem;">View your account overview and manage sensitive details.</p>
+                </div>
+            </div>
+            <div class="profile-tabs" role="tablist">
+                <button class="profile-tab active" type="button" data-tab="details" role="tab" aria-selected="true">Details</button>
+                <button class="profile-tab" type="button" data-tab="about" role="tab" aria-selected="false">About</button>
+                    <a class="profile-tab" href="profile-security.html" role="tab" aria-selected="false">Profile Info</a>
+            </div>
+            <div class="profile-tab-panel active" id="profileDetails" role="tabpanel">
+            </div>
+            <div class="profile-tab-panel" id="profileAbout" role="tabpanel">
+                <p class="profile-about-text">This profile summarizes your DepEd Academic Monitoring account activity, announcements, and access details.</p>
+            </div>
+        </section>
+
+        <section class="announcement-composer-top" aria-label="Compose announcement">
+            <div class="compose-card is-clickable" id="composeCard" role="button" tabindex="0" aria-label="Open create announcement form">
+                <div class="compose-row">
+                    <div class="compose-avatar" aria-hidden="true">
+                        <i class="fas fa-bullhorn"></i>
+                    </div>
+                    <button class="compose-field" id="composeField" type="button">
+                        Share an update with your community...
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <section class="profile-posts">
+            <div class="profile-section-header">
+                <h2 class="profile-section-title">Your Posts</h2>
+                <p class="profile-section-subtitle" id="postCount">0 announcements</p>
+            </div>
+            <div class="announcements-container">
+                <div class="announcements-feed" id="profileAnnouncementsFeed">
+                    <div class="loading-state" style="text-align: center; padding: 3rem; color: #666;">
+                        <i class="fas fa-spinner fa-spin" style="font-size: 2rem; margin-bottom: 1rem;"></i>
+                        <p style="font-size: 1.1rem;">Loading announcements...</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Create Announcement Modal -->
+    <div class="modal" id="createAnnouncementModal">
+        <div class="modal-content modal-lg announcement-composer">
+            <div class="modal-header composer-header">
+                <h2 class="modal-title">
+                    <i class="fas fa-bullhorn"></i>
+                    Create Announcement
+                </h2>
+                <button class="modal-close" id="closeAnnouncementModal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="createAnnouncementForm">
+                <div class="modal-body composer-body">
+                    <div class="composer-author">
+                        <div class="author-avatar">
+                            <i class="fas fa-user-circle"></i>
+                        </div>
+                        <div class="author-info">
+                            <strong class="author-name" id="composerUserName">Admin User</strong>
+                            <div class="audience-selector">
+                                <select id="targetRole" name="target_role_id" class="audience-select">
+                                    <option value="">🌐 Everyone</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group composer-title-group">
+                        <input type="text"
+                               id="announcementTitle"
+                               name="title"
+                               class="composer-title-input"
+                               placeholder="What's the headline?"
+                               required
+                               maxlength="200">
+                        <div class="title-counter">
+                            <span id="titleCounter">0</span>/200
+                        </div>
+                    </div>
+
+                    <div class="form-group composer-content-group">
+                        <textarea id="announcementBody"
+                                  name="body"
+                                  class="composer-textarea"
+                                  placeholder="Share important updates, news, or announcements with your community..."
+                                  required
+                                  rows="6"></textarea>
+                        <div class="content-counter">
+                            <span id="contentCounter">0</span> characters
+                        </div>
+                    </div>
+
+                    <div class="composer-advanced">
+                        <button type="button" class="advanced-toggle" id="advancedToggle">
+                            <i class="fas fa-cog"></i>
+                            Advanced Options
+                            <i class="fas fa-chevron-down toggle-icon"></i>
+                        </button>
+                        <div class="advanced-options" id="advancedOptions" style="display: none;">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="expiresAt" class="form-label">
+                                        <i class="fas fa-calendar-times"></i> Expiration Date
+                                    </label>
+                                    <input type="datetime-local" id="expiresAt" name="expires_at" class="form-control">
+                                    <small class="form-hint">Leave blank for no expiration</small>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">
+                                        <i class="fas fa-thumbtack"></i> Post Options
+                                    </label>
+                                    <div class="checkbox-group">
+                                        <label class="checkbox-label">
+                                            <input type="checkbox" id="isPinned" name="is_pinned" value="1">
+                                            <span class="checkbox-text">
+                                                <i class="fas fa-thumbtack"></i> Pin to top
+                                                <small>Keep this announcement at the top of the feed</small>
+                                            </span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer composer-footer">
+                    <div class="composer-actions">
+                        <button type="button" class="action-btn" id="addEmojiBtn" title="Add emoji">
+                            <i class="fas fa-smile"></i>
+                        </button>
+                    </div>
+                    <div class="composer-submit">
+                        <button type="button" class="btn btn-outline btn-sm" id="cancelAnnouncementBtn">
+                            Cancel
+                        </button>
+                        <button type="submit" class="btn btn-primary btn-post" id="submitAnnouncementBtn">
+                            <i class="fas fa-paper-plane"></i> Post
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <div class="footer-content">
+            <p>&copy; 2026 Department of Education - Republic of the Philippines</p>
+            <p>Academic Monitoring System v1.0</p>
+        </div>
+    </footer>
+
+    <script src="../assets/js/dashboard.js?v=20260320"></script>
+    <script src="../js/profile.js"></script>
+</body>
+</html>

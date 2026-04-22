@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Curriculum Components - DepEd Academic Monitoring System</title>
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="../../assets/css/dashboard.css?v=20260321">
+    <link rel="stylesheet" href="../../assets/css/datatable.css">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Axios -->
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <!-- SweetAlert2 (optional toasts) -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+<body>
+    <!-- Top Navigation Bar -->
+    <nav class="topbar">
+        <div class="topbar-left">
+            <button class="menu-toggle" id="menuToggle">
+                <i class="fas fa-bars"></i>
+            </button>
+            <div class="logo">
+                <img src="../../assets/img/logo/logo.jpg" alt="DepEd Logo" class="logo-img">
+                <div class="logo-text">
+                    <h1>DepEd Academic Monitoring</h1>
+                    <p>Administrative Dashboard</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="topbar-right">
+            <button class="notification-btn" id="notificationBtn">
+                <i class="fas fa-bell"></i>
+                <span class="notification-badge">3</span>
+            </button>
+
+            <div class="user-menu">
+                <button class="user-btn" id="userMenuBtn">
+                    <div class="user-avatar">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div class="user-info">
+                        <span class="user-name">Admin User</span>
+                        <span class="user-role">Administrator</span>
+                    </div>
+                    <i class="fas fa-chevron-down"></i>
+                </button>
+
+                <div class="user-dropdown" id="userDropdown">
+                    <a href="../profile.html"><i class="fas fa-user"></i> Profile</a>
+                    <a href="../settings.html"><i class="fas fa-cog"></i> Settings</a>
+                    <hr>
+                    <a href="../../logout.php" class="logout"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar" id="sidebar">
+        <nav class="sidebar-nav">
+            <ul class="nav-list">
+                <li class="nav-item">
+                    <a href="../../dashboard/admin_dashboard.html" class="nav-link">
+                        <i class="fas fa-home"></i>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+
+                <li class="nav-item has-submenu open">
+                    <a href="#" class="nav-link active" id="masterfilesToggle">
+                        <i class="fas fa-folder"></i>
+                        <span>Masterfiles</span>
+                        <i class="fas fa-chevron-down submenu-icon"></i>
+                    </a>
+                    <ul class="submenu" id="masterfilesSubmenu">
+                        <li><a href="curricula.html" data-masterfile-link="curricula"><i class="fas fa-book"></i> Curricula</a></li>
+                        <li><a href="curriculum-components.html" data-masterfile-link="curriculum_components"><i class="fas fa-sitemap"></i> Curriculum Components</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content" id="mainContent">
+        <div class="content-header">
+            <div class="header-left">
+                <h1>Curriculum Components</h1>
+                <p>Subjects, grade levels, grading components, passing marks, school-year mapping</p>
+            </div>
+        </div>
+
+        <div class="content-body">
+            <div class="card card-overflow-visible" style="margin-bottom: 1rem;">
+                <div class="table-header-section" style="display:flex;align-items:center;justify-content:space-between;gap:1rem;">
+                    <div style="display:flex;align-items:center;gap:.75rem;flex-wrap:wrap;">
+                        <label for="curriculumSelect" style="font-weight:600;">Curriculum</label>
+                        <select id="curriculumSelect" class="form-control" style="min-width:280px;"></select>
+                        <span id="statusText" style="color:var(--gray-600);font-size:.9rem;"></span>
+                    </div>
+                    <button class="btn btn-outline" id="reloadBtn">
+                        <i class="fas fa-rotate"></i>
+                        Reload
+                    </button>
+                </div>
+            </div>
+
+            <!-- Grade Levels -->
+            <div class="card card-overflow-visible" style="margin-bottom: 1rem;">
+                <div class="table-header-section" style="display:flex;align-items:center;justify-content:space-between;">
+                    <div>
+                        <h2 class="page-title" style="font-size:1.05rem;margin:0;">Curriculum Grade Levels</h2>
+                        <p class="page-subtitle" style="margin:.25rem 0 0;">Which grade levels are covered by the curriculum</p>
+                    </div>
+                    <div style="display:flex;gap:.5rem;">
+                        <button class="btn btn-outline" id="addGradeLevelRowBtn"><i class="fas fa-plus"></i> Add Row</button>
+                        <button class="btn btn-primary" id="saveGradeLevelsBtn"><i class="fas fa-save"></i> Save</button>
+                    </div>
+                </div>
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Grade Level</th>
+                                <th style="width:140px;">Sort Order</th>
+                                <th class="text-center" style="width:120px;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="gradeLevelsBody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Curriculum Subjects -->
+            <div class="card card-overflow-visible" style="margin-bottom: 1rem;">
+                <div class="table-header-section" style="display:flex;align-items:center;justify-content:space-between;">
+                    <div>
+                        <h2 class="page-title" style="font-size:1.05rem;margin:0;">Curriculum Subjects</h2>
+                        <p class="page-subtitle" style="margin:.25rem 0 0;">Subjects per grade level (required flag, weekly minutes, order)</p>
+                    </div>
+                    <div style="display:flex;gap:.5rem;">
+                        <button class="btn btn-outline" id="addSubjectRowBtn"><i class="fas fa-plus"></i> Add Row</button>
+                        <button class="btn btn-primary" id="saveSubjectsBtn"><i class="fas fa-save"></i> Save</button>
+                    </div>
+                </div>
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th style="width:180px;">Grade</th>
+                                <th>Subject</th>
+                                <th style="width:130px;">Required</th>
+                                <th style="width:160px;">Weekly Minutes</th>
+                                <th style="width:140px;">Sort Order</th>
+                                <th>Notes</th>
+                                <th class="text-center" style="width:120px;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="subjectsBody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Grading Components -->
+            <div class="card card-overflow-visible" style="margin-bottom: 1rem;">
+                <div class="table-header-section" style="display:flex;align-items:center;justify-content:space-between;">
+                    <div>
+                        <h2 class="page-title" style="font-size:1.05rem;margin:0;">Grading Components</h2>
+                        <p class="page-subtitle" style="margin:.25rem 0 0;">Component code/name and weight percentage (optionally per grade level)</p>
+                    </div>
+                    <div style="display:flex;gap:.5rem;">
+                        <button class="btn btn-outline" id="addComponentRowBtn"><i class="fas fa-plus"></i> Add Row</button>
+                        <button class="btn btn-primary" id="saveComponentsBtn"><i class="fas fa-save"></i> Save</button>
+                    </div>
+                </div>
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th style="width:180px;">Grade (optional)</th>
+                                <th style="width:160px;">Code</th>
+                                <th>Name</th>
+                                <th style="width:160px;">Weight %</th>
+                                <th style="width:140px;">Sort Order</th>
+                                <th class="text-center" style="width:120px;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="componentsBody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Passing Marks -->
+            <div class="card card-overflow-visible" style="margin-bottom: 1rem;">
+                <div class="table-header-section" style="display:flex;align-items:center;justify-content:space-between;">
+                    <div>
+                        <h2 class="page-title" style="font-size:1.05rem;margin:0;">Passing Marks</h2>
+                        <p class="page-subtitle" style="margin:.25rem 0 0;">Override passing mark per grade/subject (optional filters)</p>
+                    </div>
+                    <div style="display:flex;gap:.5rem;">
+                        <button class="btn btn-outline" id="addMarkRowBtn"><i class="fas fa-plus"></i> Add Row</button>
+                        <button class="btn btn-primary" id="saveMarksBtn"><i class="fas fa-save"></i> Save</button>
+                    </div>
+                </div>
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th style="width:180px;">Grade (optional)</th>
+                                <th>Subject (optional)</th>
+                                <th style="width:160px;">Passing Mark</th>
+                                <th>Notes</th>
+                                <th class="text-center" style="width:120px;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="marksBody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- School Year Map -->
+            <div class="card card-overflow-visible" style="margin-bottom: 1rem;">
+                <div class="table-header-section" style="display:flex;align-items:center;justify-content:space-between;">
+                    <div>
+                        <h2 class="page-title" style="font-size:1.05rem;margin:0;">School Year Mapping</h2>
+                        <p class="page-subtitle" style="margin:.25rem 0 0;">Map this curriculum to school years (primary flag used by class offerings)</p>
+                    </div>
+                    <div style="display:flex;gap:.5rem;">
+                        <button class="btn btn-outline" id="addMapRowBtn"><i class="fas fa-plus"></i> Add Row</button>
+                        <button class="btn btn-primary" id="saveMapBtn"><i class="fas fa-save"></i> Save</button>
+                    </div>
+                </div>
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>School Year</th>
+                                <th style="width:160px;">Primary</th>
+                            </tr>
+                        </thead>
+                        <tbody id="mapBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="footer-content">
+            <p>&copy; 2026 Department of Education - Republic of the Philippines</p>
+            <p>Academic Monitoring System v1.0</p>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script src="../../assets/js/dashboard.js?v=20260321"></script>
+    <script src="../../js/masterfiles/curriculum-components.js?v=20260321"></script>
+</body>
+</html>

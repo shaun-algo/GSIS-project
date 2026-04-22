@@ -1,0 +1,145 @@
+/*
+ * Learners masterfile minimal theme
+ * Scoped to body.masterfile-minimal to avoid affecting other pages.
+ */
+
+body.masterfile-minimal {
+    background: #f4f6f9;
+    color: #1f2937;
+
+    /* Compact controls beyond the default compact density */
+    --control-min-height: 28px;
+    --control-font-size: 0.82rem;
+    --control-padding-y: 0.32rem;
+    --control-padding-x: 0.58rem;
+}
+
+body.masterfile-minimal .main-content {
+    padding: 1.2rem 1.4rem 1.5rem;
+}
+
+body.masterfile-minimal .page-header {
+    margin-bottom: 1.1rem;
+    max-width: 1080px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+body.masterfile-minimal .page-title {
+    font-size: 1.45rem;
+    letter-spacing: -0.01em;
+}
+
+body.masterfile-minimal .page-subtitle {
+    font-size: 0.88rem;
+    color: #5b6777;
+}
+
+body.masterfile-minimal .card {
+    border: 1px solid #d9e2ec;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05);
+}
+
+body.masterfile-minimal .card-body {
+    padding: 1rem;
+}
+
+body.masterfile-minimal #studentDetailsForm {
+    padding: 0.95rem;
+}
+
+body.masterfile-minimal .learner-details-card {
+    max-width: 1080px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+body.masterfile-minimal .learner-filter-card {
+    max-width: 1080px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* Remove sticky behavior and keep the core info block static in normal flow */
+body.masterfile-minimal .student-fixed-header {
+    position: static;
+    top: auto;
+    z-index: auto;
+    margin-bottom: 1rem;
+    box-shadow: none;
+    border: 1px solid #dbe2ea;
+    border-radius: 10px;
+    padding: 0.8rem 1rem;
+    background: #ffffff;
+}
+
+body.masterfile-minimal .student-fixed-meta {
+    gap: 0.55rem 0.8rem;
+}
+
+body.masterfile-minimal .student-fixed-label {
+    font-size: 0.72rem;
+}
+
+body.masterfile-minimal .student-fixed-value {
+    font-size: 0.88rem;
+}
+
+body.masterfile-minimal .form-section {
+    margin-bottom: 0.9rem;
+    padding: 0.85rem;
+}
+
+body.masterfile-minimal .section-title {
+    font-size: 0.95rem;
+    margin-bottom: 0.55rem;
+    padding-bottom: 0.35rem;
+}
+
+body.masterfile-minimal .section-fields {
+    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+    gap: 0.5rem;
+}
+
+body.masterfile-minimal .form-group > label,
+body.masterfile-minimal .modal-content .form-group > label {
+    font-size: 0.76rem;
+    margin-bottom: 0.22rem;
+}
+
+body.masterfile-minimal #studentFilterInput.search-input {
+    max-width: 420px;
+    font-size: 0.86rem;
+    padding-top: 0.52rem;
+    padding-bottom: 0.52rem;
+}
+
+body.masterfile-minimal .btn {
+    padding: 0.48rem 0.95rem;
+    font-size: 0.82rem;
+    border-radius: 8px;
+}
+
+@media (max-width: 768px) {
+    body.masterfile-minimal .main-content {
+        padding: 0.95rem;
+    }
+
+    body.masterfile-minimal .student-fixed-header {
+        padding: 0.72rem 0.8rem;
+    }
+
+    body.masterfile-minimal .student-fixed-meta {
+        grid-template-columns: repeat(2, minmax(120px, 1fr));
+    }
+
+    body.masterfile-minimal .learner-details-card {
+        max-width: 100%;
+    }
+
+    body.masterfile-minimal .learner-filter-card,
+    body.masterfile-minimal .page-header {
+        max-width: 100%;
+    }
+}
