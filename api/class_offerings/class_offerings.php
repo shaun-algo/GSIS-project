@@ -238,7 +238,7 @@ function createClassOffering(PDO $conn): void {
         respond(['success' => false, 'message' => 'school_year_id must match the section\'s school_year_id'], 422);
     }
 
-    // Prevent duplicates (same subject + section + school year)
+    // Prevent exact duplicates (same subject + section + school year + teacher)
     // IMPORTANT: class_offerings has a UNIQUE KEY across these columns, so if a record exists but is soft-deleted,
     // we must restore it instead of trying to insert (which would fail with 23000).
     $dup = $conn->prepare(
@@ -247,22 +247,20 @@ function createClassOffering(PDO $conn): void {
          WHERE subject_id = :subject_id
            AND section_id = :section_id
            AND school_year_id = :school_year_id
+           AND teacher_id = :teacher_id
          LIMIT 1'
     );
     $dup->bindValue(':subject_id', (int)$data['subject_id'], PDO::PARAM_INT);
     $dup->bindValue(':section_id', (int)$data['section_id'], PDO::PARAM_INT);
     $dup->bindValue(':school_year_id', (int)$data['school_year_id'], PDO::PARAM_INT);
+    $dup->bindValue(':teacher_id', (int)$data['teacher_id'], PDO::PARAM_INT);
     $dup->execute();
     $existing = $dup->fetch(PDO::FETCH_ASSOC);
     if ($existing) {
         $existingId = (int)($existing['class_id'] ?? 0);
-        $existingTeacherId = (int)($existing['teacher_id'] ?? 0);
         $isDeleted = (int)($existing['is_deleted'] ?? 0) === 1;
 
         if (!$isDeleted) {
-            if ($existingTeacherId !== (int)$data['teacher_id']) {
-                respond(['success' => false, 'message' => 'Subject is already assigned to another teacher for this section and school year'], 409);
-            }
             respond(['success' => true, 'message' => 'Class offering already exists', 'class_id' => $existingId]);
         }
 
@@ -300,11 +298,13 @@ function createClassOffering(PDO $conn): void {
                  WHERE subject_id = :subject_id
                    AND section_id = :section_id
                    AND school_year_id = :school_year_id
+                   AND teacher_id = :teacher_id
                  LIMIT 1'
             );
             $dup->bindValue(':subject_id', (int)$data['subject_id'], PDO::PARAM_INT);
             $dup->bindValue(':section_id', (int)$data['section_id'], PDO::PARAM_INT);
             $dup->bindValue(':school_year_id', (int)$data['school_year_id'], PDO::PARAM_INT);
+            $dup->bindValue(':teacher_id', (int)$data['teacher_id'], PDO::PARAM_INT);
             $dup->execute();
             $existing = $dup->fetch(PDO::FETCH_ASSOC);
             if ($existing) {
@@ -328,9 +328,6 @@ function createClassOffering(PDO $conn): void {
                     ]);
                 }
 
-                if ($existingTeacherId !== (int)$data['teacher_id']) {
-                    respond(['success' => false, 'message' => 'Subject is already assigned to another teacher for this section and school year'], 409);
-                }
                 respond(['success' => true, 'message' => 'Class offering already exists', 'class_id' => $existingId]);
             }
         }
@@ -355,13 +352,14 @@ function updateClassOffering(PDO $conn): void {
         respond(['success' => false, 'message' => 'school_year_id must match the section\'s school_year_id'], 422);
     }
 
-        // Prevent duplicates when updating (same subject + section + school year)
+        // Prevent exact duplicates when updating (same subject + section + school year + teacher)
     $dup = $conn->prepare(
         'SELECT class_id
          FROM class_offerings
          WHERE subject_id = :subject_id
            AND section_id = :section_id
            AND school_year_id = :school_year_id
+           AND teacher_id = :teacher_id
            AND is_deleted = 0
            AND class_id <> :class_id
          LIMIT 1'
@@ -369,6 +367,7 @@ function updateClassOffering(PDO $conn): void {
     $dup->bindValue(':subject_id', (int)$data['subject_id'], PDO::PARAM_INT);
     $dup->bindValue(':section_id', (int)$data['section_id'], PDO::PARAM_INT);
     $dup->bindValue(':school_year_id', (int)$data['school_year_id'], PDO::PARAM_INT);
+    $dup->bindValue(':teacher_id', (int)$data['teacher_id'], PDO::PARAM_INT);
     $dup->bindValue(':class_id', (int)$data['class_id'], PDO::PARAM_INT);
     $dup->execute();
     $existingId = $dup->fetchColumn();

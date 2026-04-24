@@ -13,6 +13,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 require_once __DIR__ . '/../database/connection.php';
 
 require_once __DIR__ . '/../utils/auth.php';
+require_once __DIR__ . '/../utils/audit.php';
 
 function respond($payload, int $code = 200): void {
     http_response_code($code);
@@ -237,6 +238,13 @@ function createLearner(PDO $conn): void {
 
         $conn->commit();
 
+        audit_log($conn, 'learners', $learnerId, 'INSERT', null, [
+            'learner_id' => $learnerId,
+            'lrn' => $lrn,
+            'first_name' => $data['first_name'],
+            'last_name' => $data['last_name'],
+        ]);
+
         respond([
             'success' => true,
             'message' => 'Learner created',
@@ -357,6 +365,15 @@ function updateLearner(PDO $conn): void {
     }
 
     $conn->commit();
+
+    $oldRow = audit_fetch_old($conn, 'learners', 'learner_id', (int)$data['learner_id']);
+    audit_log($conn, 'learners', (int)$data['learner_id'], 'UPDATE', $oldRow, [
+        'learner_id' => (int)$data['learner_id'],
+        'lrn' => $lrn,
+        'first_name' => $data['first_name'],
+        'last_name' => $data['last_name'],
+    ]);
+
     respond(['success' => true, 'message' => 'Learner updated']);
 }
 
@@ -377,6 +394,10 @@ function deleteLearner(PDO $conn): void {
     $enroll->execute();
 
     $conn->commit();
+
+    $oldRow = audit_fetch_old($conn, 'learners', 'learner_id', (int)$data['learner_id']);
+    audit_log($conn, 'learners', (int)$data['learner_id'], 'DELETE', $oldRow, null);
+
     respond(['success' => true, 'message' => 'Learner deleted']);
 }
 

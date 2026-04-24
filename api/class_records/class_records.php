@@ -29,6 +29,24 @@ function requireInt($value, string $name): int {
     return (int)$value;
 }
 
+/**
+ * Sanitize a grade component value.
+ * Returns null for blank/null, float for valid numbers 0–100,
+ * or throws for non-numeric strings / out-of-range.
+ */
+function sanitizeGradeValue($raw, string $label): ?float {
+    if ($raw === null || $raw === '') return null;
+    // Reject non-numeric strings (e.g. "abc", "50abc") before PHP silently casts them to 0
+    if (is_string($raw) && !is_numeric($raw)) {
+        throw new InvalidArgumentException("{$label} must be a number between 0 and 100");
+    }
+    $val = (float)$raw;
+    if ($val < 0 || $val > 100) {
+        throw new InvalidArgumentException("{$label} must be between 0 and 100");
+    }
+    return $val;
+}
+
 function getTeacherEmployeeId(PDO $conn, int $userId): ?int {
     $stmt = $conn->prepare('SELECT employee_id FROM employees WHERE user_id = :user_id AND is_deleted = 0 LIMIT 1');
     $stmt->bindValue(':user_id', $userId, PDO::PARAM_INT);
@@ -273,19 +291,18 @@ try {
 }
 
 function getMyClassOfferings(PDO $conn, array $session): void {
-    $canonicalOfferingsSql = canonicalClassOfferingsSql();
-
     if (auth_is_admin($session)) {
         $sql = "SELECT co.class_id, co.subject_id, s.subject_code, s.subject_name,
                        co.section_id, sec.section_name, sec.grade_level_id, gl.grade_name,
                        sec.adviser_id,
                        co.school_year_id, sy.year_label, sy.is_active AS school_year_is_active,
                        co.teacher_id
-                FROM (" . $canonicalOfferingsSql . ") co
+                FROM class_offerings co
                 JOIN subjects s ON s.subject_id = co.subject_id AND s.is_deleted = 0
                 JOIN sections sec ON sec.section_id = co.section_id AND sec.is_deleted = 0
                 LEFT JOIN grade_levels gl ON gl.grade_level_id = sec.grade_level_id
                 LEFT JOIN school_years sy ON sy.school_year_id = co.school_year_id
+                WHERE co.is_deleted = 0
                 ORDER BY sy.school_year_id DESC, sec.section_name ASC, s.subject_name ASC";
         $stmt = $conn->prepare($sql);
         $stmt->execute();
@@ -297,17 +314,18 @@ function getMyClassOfferings(PDO $conn, array $session): void {
         auth_abort(403, 'Teacher profile not found');
     }
 
-        $sql = "SELECT co.class_id, co.subject_id, s.subject_code, s.subject_name,
+    $sql = "SELECT co.class_id, co.subject_id, s.subject_code, s.subject_name,
                  co.section_id, sec.section_name, sec.grade_level_id, gl.grade_name,
                  sec.adviser_id,
                  co.school_year_id, sy.year_label, sy.is_active AS school_year_is_active,
                  co.teacher_id
-             FROM (" . $canonicalOfferingsSql . ") co
+             FROM class_offerings co
             JOIN subjects s ON s.subject_id = co.subject_id AND s.is_deleted = 0
             JOIN sections sec ON sec.section_id = co.section_id AND sec.is_deleted = 0
             LEFT JOIN grade_levels gl ON gl.grade_level_id = sec.grade_level_id
             LEFT JOIN school_years sy ON sy.school_year_id = co.school_year_id
-             WHERE co.teacher_id = :teacher_id
+             WHERE co.is_deleted = 0
+               AND co.teacher_id = :teacher_id
             ORDER BY sy.school_year_id DESC, sec.section_name ASC, s.subject_name ASC";
     $stmt = $conn->prepare($sql);
     $stmt->bindValue(':teacher_id', $employeeId, PDO::PARAM_INT);
@@ -341,6 +359,27 @@ function getRosterGrades(PDO $conn, array $session): void {
         $passingMark = fetchPassingMark($conn, (int)$curriculumId, (int)$class['grade_level_id'], (int)$class['subject_id']);
     }
 
+    // Support teacher reassignment history:
+    // if older grades were encoded under a previous class_id for the same
+    // section + school year + subject, include those rows and pick the latest.
+    $equivStmt = $conn->prepare(
+        'SELECT class_id
+         FROM class_offerings
+         WHERE section_id = :section_id
+           AND school_year_id = :school_year_id
+           AND subject_id = :subject_id'
+    );
+    $equivStmt->bindValue(':section_id', (int)$class['section_id'], PDO::PARAM_INT);
+    $equivStmt->bindValue(':school_year_id', (int)$class['school_year_id'], PDO::PARAM_INT);
+    $equivStmt->bindValue(':subject_id', (int)$class['subject_id'], PDO::PARAM_INT);
+    $equivStmt->execute();
+    $equivalentClassIds = array_values(array_unique(array_map('intval', $equivStmt->fetchAll(PDO::FETCH_COLUMN))));
+    if (!in_array($classId, $equivalentClassIds, true)) {
+        $equivalentClassIds[] = $classId;
+    }
+    $equivalentClassIds = array_values(array_filter($equivalentClassIds, fn($id) => $id > 0));
+
+    $inPlaceholders = implode(',', array_fill(0, count($equivalentClassIds), '?'));
     $sql = "SELECT e.enrollment_id,
                    l.learner_id,
                    l.lrn,
@@ -356,22 +395,37 @@ function getRosterGrades(PDO $conn, array $session): void {
                    g.quarterly_grade
             FROM enrollments e
             JOIN learners l ON l.learner_id = e.learner_id AND l.is_deleted = 0
-            LEFT JOIN grades g
-                   ON g.enrollment_id = e.enrollment_id
-                  AND g.class_id = :class_id
-                  AND g.grading_period_id = :gp_id
-                  AND g.is_deleted = 0
+            LEFT JOIN (
+                SELECT g1.enrollment_id,
+                       g1.grade_id,
+                       g1.written_works,
+                       g1.performance_tasks,
+                       g1.quarterly_exam,
+                       g1.quarterly_grade
+                FROM grades g1
+                JOIN (
+                    SELECT enrollment_id, MAX(grade_id) AS latest_grade_id
+                    FROM grades
+                    WHERE grading_period_id = ?
+                      AND is_deleted = 0
+                      AND class_id IN (" . $inPlaceholders . ")
+                    GROUP BY enrollment_id
+                ) pick ON pick.latest_grade_id = g1.grade_id
+            ) g ON g.enrollment_id = e.enrollment_id
             WHERE e.is_deleted = 0
               AND e.enrollment_status = 'Enrolled'
-              AND e.section_id = :section_id
-              AND e.school_year_id = :school_year_id
+              AND e.section_id = ?
+              AND e.school_year_id = ?
             ORDER BY l.last_name ASC, l.first_name ASC";
 
     $stmt = $conn->prepare($sql);
-    $stmt->bindValue(':class_id', $classId, PDO::PARAM_INT);
-    $stmt->bindValue(':gp_id', $gradingPeriodId, PDO::PARAM_INT);
-    $stmt->bindValue(':section_id', (int)$class['section_id'], PDO::PARAM_INT);
-    $stmt->bindValue(':school_year_id', (int)$class['school_year_id'], PDO::PARAM_INT);
+    $bindPos = 1;
+    $stmt->bindValue($bindPos++, $gradingPeriodId, PDO::PARAM_INT);
+    foreach ($equivalentClassIds as $cid) {
+        $stmt->bindValue($bindPos++, (int)$cid, PDO::PARAM_INT);
+    }
+    $stmt->bindValue($bindPos++, (int)$class['section_id'], PDO::PARAM_INT);
+    $stmt->bindValue($bindPos++, (int)$class['school_year_id'], PDO::PARAM_INT);
     $stmt->execute();
     $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
@@ -536,21 +590,9 @@ function saveRosterGrades(PDO $conn, array $session): void {
                 continue;
             }
 
-            $ww = array_key_exists('written_works', $g) ? $g['written_works'] : null;
-            $pt = array_key_exists('performance_tasks', $g) ? $g['performance_tasks'] : null;
-            $qe = array_key_exists('quarterly_exam', $g) ? $g['quarterly_exam'] : null;
-
-            $ww = ($ww === '' || $ww === null) ? null : (float)$ww;
-            $pt = ($pt === '' || $pt === null) ? null : (float)$pt;
-            $qe = ($qe === '' || $qe === null) ? null : (float)$qe;
-
-            foreach ([['written_works', $ww], ['performance_tasks', $pt], ['quarterly_exam', $qe]] as $pair) {
-                [$label, $val] = $pair;
-                if ($val === null) continue;
-                if ($val < 0 || $val > 100) {
-                    throw new InvalidArgumentException("{$label} must be between 0 and 100");
-                }
-            }
+            $ww = sanitizeGradeValue(array_key_exists('written_works', $g) ? $g['written_works'] : null, 'written_works');
+            $pt = sanitizeGradeValue(array_key_exists('performance_tasks', $g) ? $g['performance_tasks'] : null, 'performance_tasks');
+            $qe = sanitizeGradeValue(array_key_exists('quarterly_exam', $g) ? $g['quarterly_exam'] : null, 'quarterly_exam');
 
             $initial = computeInitialGrade($ww, $pt, $qe, $weights);
             $qg = transmuteGrade($initial);

@@ -1,5 +1,4 @@
 <?php
-header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type');
@@ -13,8 +12,11 @@ require_once __DIR__ . '/../database/connection.php';
 require_once __DIR__ . '/../utils/auth.php';
 
 function respond($payload, int $code = 200): void {
+    if (!headers_sent()) {
+        header('Content-Type: application/json; charset=utf-8');
+    }
     http_response_code($code);
-    echo json_encode($payload);
+    echo json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
     exit;
 }
 
@@ -67,6 +69,214 @@ function computeAge(?string $dob, ?string $asOfDate = null): ?int {
     } catch (Throwable $_) {
         return null;
     }
+}
+
+function sf9_normalize_curriculum_level(?string $value): ?string {
+    $v = strtolower(trim((string)($value ?? '')));
+    if ($v === '') return null;
+    if (in_array($v, ['elementary', 'elem', 'grade school'], true)) return 'elementary';
+    if (in_array($v, ['jhs', 'junior high school', 'junior high'], true)) return 'jhs';
+    if (in_array($v, ['shs', 'senior high school', 'senior high'], true)) return 'shs';
+    if (str_contains($v, 'elementary')) return 'elementary';
+    if (str_contains($v, 'junior')) return 'jhs';
+    if (str_contains($v, 'senior')) return 'shs';
+    return null;
+}
+
+function sf9_infer_curriculum_level(?string $configured, ?string $educationLevelName, ?string $gradeName): string {
+    $fromConfigured = sf9_normalize_curriculum_level($configured);
+    if ($fromConfigured !== null) return $fromConfigured;
+
+    $fromEducation = sf9_normalize_curriculum_level($educationLevelName);
+    if ($fromEducation !== null) return $fromEducation;
+
+    if (preg_match('/(\d+)/', (string)($gradeName ?? ''), $m)) {
+        $gradeNo = (int)$m[1];
+        if ($gradeNo >= 11) return 'shs';
+        if ($gradeNo >= 7) return 'jhs';
+    }
+
+    return 'elementary';
+}
+
+function sf9_compute_average(array $values): ?float {
+    $numeric = [];
+    foreach ($values as $value) {
+        if ($value === null || $value === '' || $value === '--') continue;
+        if (!is_numeric($value)) continue;
+        $numeric[] = (float)$value;
+    }
+    if (!$numeric) return null;
+    return round(array_sum($numeric) / count($numeric), 2);
+}
+
+function sf9_has_any_grade(array $row): bool {
+    $keys = ['q1', 'q2', 'q3', 'q4', 'final_grade', 'final_rating'];
+    foreach ($keys as $k) {
+        if (!array_key_exists($k, $row)) continue;
+        $v = $row[$k];
+        if ($v === null) continue;
+        if (is_string($v) && trim($v) === '') continue;
+        if ($v === '--') continue;
+        if (is_numeric($v)) return true;
+        if (is_string($v)) return true;
+    }
+    return false;
+}
+
+function sf9_infer_subject_category(string $subjectName, ?string $subjectCode, string $curriculumLevel): string {
+    $name = strtolower(trim($subjectName));
+    $code = strtoupper(trim((string)($subjectCode ?? '')));
+
+    if ($curriculumLevel === 'shs') {
+        foreach ([
+            'work immersion',
+            'entrepreneurship',
+            'inquiries',
+            'investigation',
+            'research',
+            'specialized',
+            'applied'
+        ] as $needle) {
+            if (str_contains($name, $needle)) {
+                return 'Applied and Specialized Subjects';
+            }
+        }
+        return 'Core Subjects';
+    }
+
+    if ($curriculumLevel === 'jhs') {
+        if (in_array($code, ['MAPEH', 'MUSIC', 'ARTS', 'PE', 'HEALTH'], true)) return 'MAPEH';
+        if ($code === 'TLE' || str_contains($name, 'technology and livelihood')) return 'TLE';
+        if ($code === 'ESP' || str_contains($name, 'pagpapakatao')) return 'Edukasyon sa Pagpapakatao';
+        if ($code === 'AP' || str_contains($name, 'araling panlipunan')) return 'Araling Panlipunan';
+        return 'Core Subjects';
+    }
+
+    return 'Learning Areas';
+}
+
+function sf9_subject_key(?string $subjectCode, ?string $subjectName): string {
+    $code = strtoupper(trim((string)($subjectCode ?? '')));
+    if ($code !== '') return 'CODE:' . $code;
+    $name = strtolower(trim((string)($subjectName ?? '')));
+    $name = preg_replace('/\s+/', ' ', $name);
+    return 'NAME:' . ($name ?? '');
+}
+
+function sf9_pick_best_subject_row(array $candidates, array $gradesByClass, array $finalByClass, array $quarters): array {
+    // Prefer the class offering that actually has any quarterly grade or final grade saved.
+    $best = $candidates[0];
+    $bestScore = -1;
+    $bestClassId = (int)($best['class_id'] ?? 0);
+    foreach ($candidates as $c) {
+        $cid = (int)($c['class_id'] ?? 0);
+        $score = 0;
+        if ($cid > 0) {
+            foreach ($quarters as $q) {
+                $gpId = (int)($q['grading_period_id'] ?? 0);
+                if ($gpId > 0 && isset($gradesByClass[$cid]) && array_key_exists($gpId, $gradesByClass[$cid])) {
+                    $val = $gradesByClass[$cid][$gpId];
+                    if ($val !== null && $val !== '') $score += 1;
+                }
+            }
+            if (isset($finalByClass[$cid])) {
+                $fg = $finalByClass[$cid]['final_grade'] ?? null;
+                if ($fg !== null && $fg !== '') $score += 2;
+            }
+        }
+        // Tie-breaker: when scores are equal, prefer newer class offering (higher class_id).
+        // This helps SF9 follow reassigned/latest offerings after updates.
+        if ($score > $bestScore || ($score === $bestScore && $cid > $bestClassId)) {
+            $bestScore = $score;
+            $best = $c;
+            $bestClassId = $cid;
+        }
+    }
+    return $best;
+}
+
+function sf9_pick_latest_quarter_value(array $candidateClassIds, array $gradesByClass, int $gradingPeriodId) {
+    if ($gradingPeriodId <= 0) return null;
+    $ids = array_values(array_unique(array_map('intval', $candidateClassIds)));
+    $bestRowId = -1;
+    $bestValue = null;
+    foreach ($ids as $cid) {
+        if ($cid <= 0) continue;
+        if (!isset($gradesByClass[$cid])) continue;
+        if (!array_key_exists($gradingPeriodId, $gradesByClass[$cid])) continue;
+        $entry = $gradesByClass[$cid][$gradingPeriodId];
+        $rowId = (int)($entry['grade_id'] ?? 0);
+        $val = $entry['quarterly_grade'] ?? null;
+        if ($val === null || $val === '') continue;
+        if ($rowId > $bestRowId) {
+            $bestRowId = $rowId;
+            $bestValue = $val;
+        }
+    }
+    return $bestValue;
+}
+
+function sf9_pick_latest_final_value(array $candidateClassIds, array $finalByClass): array {
+    $ids = array_values(array_unique(array_map('intval', $candidateClassIds)));
+    $bestRowId = -1;
+    $best = ['final_grade' => null, 'remark' => null];
+    foreach ($ids as $cid) {
+        if ($cid <= 0) continue;
+        if (!isset($finalByClass[$cid])) continue;
+        $entry = $finalByClass[$cid];
+        $fg = $entry['final_grade'] ?? null;
+        if ($fg === null || $fg === '') continue;
+        $rowId = (int)($entry['final_grade_id'] ?? 0);
+        if ($rowId > $bestRowId) {
+            $bestRowId = $rowId;
+            $best = [
+                'final_grade' => $fg,
+                'remark' => $entry['remark'] ?? null,
+            ];
+        }
+    }
+    return $best;
+}
+
+function sf9_observed_values_template(): array {
+    return [
+        'maka_diyos_1' => [
+            'core_value' => 'Maka-Diyos',
+            'behavior_statement' => "Expresses one's spiritual beliefs while respecting the spiritual beliefs of others",
+            'q1' => '', 'q2' => '', 'q3' => '', 'q4' => ''
+        ],
+        'maka_diyos_2' => [
+            'core_value' => 'Maka-Diyos',
+            'behavior_statement' => 'Shows adherence to ethical principles by upholding truth in all undertakings',
+            'q1' => '', 'q2' => '', 'q3' => '', 'q4' => ''
+        ],
+        'makatao_1' => [
+            'core_value' => 'Makatao',
+            'behavior_statement' => 'Is sensitive to individual, social and cultural differences; resists stereotyping people',
+            'q1' => '', 'q2' => '', 'q3' => '', 'q4' => ''
+        ],
+        'makatao_2' => [
+            'core_value' => 'Makatao',
+            'behavior_statement' => 'Demonstrates contributions toward solidarity',
+            'q1' => '', 'q2' => '', 'q3' => '', 'q4' => ''
+        ],
+        'makakalikasan_1' => [
+            'core_value' => 'Makakalikasan',
+            'behavior_statement' => 'Cares for the environment and utilizes resources wisely, judiciously and economically',
+            'q1' => '', 'q2' => '', 'q3' => '', 'q4' => ''
+        ],
+        'makabansa_1' => [
+            'core_value' => 'Makabansa',
+            'behavior_statement' => 'Demonstrates pride in being a Filipino; exercises the rights and responsibilities of a Filipino citizen',
+            'q1' => '', 'q2' => '', 'q3' => '', 'q4' => ''
+        ],
+        'makabansa_2' => [
+            'core_value' => 'Makabansa',
+            'behavior_statement' => 'Demonstrates appropriate behavior in carrying out activities in the school, community and country',
+            'q1' => '', 'q2' => '', 'q3' => '', 'q4' => ''
+        ],
+    ];
 }
 
 function sf9_months(?int $yearStart, ?int $yearEnd): array {
@@ -373,6 +583,12 @@ function getSF9Data(PDO $conn): void {
     if (!$h) {
         respond(['success' => false, 'message' => 'Report card not found'], 404);
     }
+    // Keep persisted snapshot in sync whenever SF9 is opened.
+    try {
+        populateReportCardSnapshot($conn, $reportCardId);
+    } catch (Throwable $_) {
+        // Non-fatal: SF9 should still render from live tables.
+    }
 
     $schoolYearId = (int)($h['school_year_id'] ?? 0);
     $sectionId = (int)($h['section_id'] ?? 0);
@@ -394,6 +610,8 @@ function getSF9Data(PDO $conn): void {
     }
 
     $settings = getSchoolSettingsMap($conn);
+    // Default logo for SF9 header (frontend may override if needed)
+    $defaultLogoUrl = '/deped_capstone2/assets/img/logo/logo.jpg';
 
     $quarters = $schoolYearId > 0 ? getQuarterGradingPeriods($conn, $schoolYearId) : [
         ['quarter' => 1, 'grading_period_id' => 0, 'period_name' => ''],
@@ -408,8 +626,7 @@ function getSF9Data(PDO $conn): void {
         'SELECT co.class_id, s.subject_name, s.subject_code
          FROM class_offerings co
          JOIN subjects s ON s.subject_id = co.subject_id
-         WHERE co.is_deleted = 0
-           AND s.is_deleted = 0
+         WHERE s.is_deleted = 0
            AND co.section_id = :sid
            AND co.school_year_id = :sy
          ORDER BY s.subject_name'
@@ -420,16 +637,21 @@ function getSF9Data(PDO $conn): void {
     $subjects = $sub->fetchAll(PDO::FETCH_ASSOC) ?: [];
     $classIds = array_values(array_filter(array_map(fn($r) => (int)($r['class_id'] ?? 0), $subjects), fn($id) => $id > 0));
 
-    $gradesByClass = []; // [class_id][grading_period_id] = quarterly_grade
+    $gradesByClass = []; // [class_id][grading_period_id] = ['grade_id'=>..,'quarterly_grade'=>..]
     if ($enrollmentId > 0 && $classIds && $quarterIds) {
         $inClass = implode(',', array_fill(0, count($classIds), '?'));
         $inQ = implode(',', array_fill(0, count($quarterIds), '?'));
-        $sql = "SELECT class_id, grading_period_id, quarterly_grade
-                FROM grades
-                WHERE enrollment_id = ?
-                  AND is_deleted = 0
-                  AND class_id IN ({$inClass})
-                  AND grading_period_id IN ({$inQ})";
+        $sql = "SELECT g.grade_id, g.class_id, g.grading_period_id, g.quarterly_grade
+                FROM grades g
+                JOIN (
+                    SELECT class_id, grading_period_id, MAX(grade_id) AS latest_grade_id
+                    FROM grades
+                    WHERE enrollment_id = ?
+                      AND is_deleted = 0
+                      AND class_id IN ({$inClass})
+                      AND grading_period_id IN ({$inQ})
+                    GROUP BY class_id, grading_period_id
+                ) pick ON pick.latest_grade_id = g.grade_id";
         $g = $conn->prepare($sql);
         $i = 1;
         $g->bindValue($i++, $enrollmentId, PDO::PARAM_INT);
@@ -441,18 +663,26 @@ function getSF9Data(PDO $conn): void {
             $qid = (int)($r['grading_period_id'] ?? 0);
             if ($cid <= 0 || $qid <= 0) continue;
             if (!isset($gradesByClass[$cid])) $gradesByClass[$cid] = [];
-            $gradesByClass[$cid][$qid] = $r['quarterly_grade'];
+            $gradesByClass[$cid][$qid] = [
+                'grade_id' => (int)($r['grade_id'] ?? 0),
+                'quarterly_grade' => $r['quarterly_grade'],
+            ];
         }
     }
 
-    $finalByClass = []; // [class_id] = ['final_grade'=>..., 'remark'=>...]
+    $finalByClass = []; // [class_id] = ['final_grade_id'=>..,'final_grade'=>...,'remark'=>...]
     if ($enrollmentId > 0 && $classIds) {
         $inClass = implode(',', array_fill(0, count($classIds), '?'));
-        $sql = "SELECT class_id, final_grade, remark
-                FROM final_grades
-                WHERE enrollment_id = ?
-                  AND is_deleted = 0
-                  AND class_id IN ({$inClass})";
+        $sql = "SELECT fg.final_grade_id, fg.class_id, fg.final_grade, fg.remark
+                FROM final_grades fg
+                JOIN (
+                    SELECT class_id, MAX(final_grade_id) AS latest_final_grade_id
+                    FROM final_grades
+                    WHERE enrollment_id = ?
+                      AND is_deleted = 0
+                      AND class_id IN ({$inClass})
+                    GROUP BY class_id
+                ) pick ON pick.latest_final_grade_id = fg.final_grade_id";
         $fg = $conn->prepare($sql);
         $i = 1;
         $fg->bindValue($i++, $enrollmentId, PDO::PARAM_INT);
@@ -462,10 +692,32 @@ function getSF9Data(PDO $conn): void {
             $cid = (int)($r['class_id'] ?? 0);
             if ($cid <= 0) continue;
             $finalByClass[$cid] = [
+                'final_grade_id' => (int)($r['final_grade_id'] ?? 0),
                 'final_grade' => $r['final_grade'],
                 'remark' => $r['remark'],
             ];
         }
+    }
+
+    // Deduplicate learning areas so one subject appears once.
+    if ($subjects) {
+        $bucketed = [];
+        foreach ($subjects as $s) {
+            $key = sf9_subject_key($s['subject_code'] ?? null, $s['subject_name'] ?? null);
+            if (!isset($bucketed[$key])) $bucketed[$key] = [];
+            $bucketed[$key][] = $s;
+        }
+        $deduped = [];
+        foreach ($bucketed as $candidates) {
+            $best = sf9_pick_best_subject_row($candidates, $gradesByClass, $finalByClass, $quarters);
+            $best['_candidate_class_ids'] = array_values(array_filter(array_map(
+                fn($x) => (int)($x['class_id'] ?? 0),
+                $candidates
+            ), fn($id) => $id > 0));
+            $deduped[] = $best;
+        }
+        usort($deduped, fn($a, $b) => strcmp((string)($a['subject_name'] ?? ''), (string)($b['subject_name'] ?? '')));
+        $subjects = $deduped;
     }
 
     $gradeRows = [];
@@ -483,20 +735,37 @@ function getSF9Data(PDO $conn): void {
             'remark' => null,
         ];
         if ($cid > 0) {
+            $candidateClassIds = $s['_candidate_class_ids'] ?? [$cid];
+            if (!is_array($candidateClassIds) || !$candidateClassIds) {
+                $candidateClassIds = [$cid];
+            }
             foreach ($quarters as $q) {
                 $qNo = (int)($q['quarter'] ?? 0);
                 $gpId = (int)($q['grading_period_id'] ?? 0);
                 if ($qNo >= 1 && $qNo <= 4 && $gpId > 0) {
-                    $row['q' . $qNo] = $gradesByClass[$cid][$gpId] ?? null;
+                    $row['q' . $qNo] = sf9_pick_latest_quarter_value($candidateClassIds, $gradesByClass, $gpId);
                 }
             }
-            if (isset($finalByClass[$cid])) {
-                $row['final_grade'] = $finalByClass[$cid]['final_grade'] ?? null;
-                $row['remark'] = $finalByClass[$cid]['remark'] ?? null;
-            }
+            $latestFinal = sf9_pick_latest_final_value($candidateClassIds, $finalByClass);
+            $row['final_grade'] = $latestFinal['final_grade'];
+            $row['remark'] = $latestFinal['remark'];
+        }
+        $computedFinal = $row['final_grade'];
+        if ($computedFinal === null || $computedFinal === '') {
+            $computedFinal = sf9_compute_average([$row['q1'], $row['q2'], $row['q3'], $row['q4']]);
+        } elseif (is_numeric($computedFinal)) {
+            $computedFinal = round((float)$computedFinal, 2);
+        }
+        $row['final_grade'] = $computedFinal;
+        if ($computedFinal !== null) {
+            $row['remark'] = $computedFinal >= 75 ? 'Passed' : 'Failed';
         }
         $gradeRows[] = $row;
     }
+
+    // Remove rows that are completely empty (all quarters + final are blank).
+    // This avoids showing stale/legacy offerings with no encoded grades.
+    $gradeRows = array_values(array_filter($gradeRows, 'sf9_has_any_grade'));
 
     $gaStmt = $conn->prepare('SELECT general_average FROM general_averages WHERE enrollment_id = :eid AND is_deleted = 0 LIMIT 1');
     $gaStmt->bindValue(':eid', $enrollmentId, PDO::PARAM_INT);
@@ -630,6 +899,8 @@ function getSF9Data(PDO $conn): void {
             'division' => $settings['division'] ?? ($settings['school_division'] ?? null),
             'district' => $settings['district'] ?? ($settings['school_district'] ?? null),
             'school_head' => $settings['school_head'] ?? ($settings['school_head_name'] ?? ($settings['principal_name'] ?? null)),
+            'logo_url' => $settings['logo_url'] ?? ($settings['school_logo_url'] ?? $defaultLogoUrl),
+            'deped_logo_url' => $settings['deped_logo_url'] ?? '/deped_capstone2/assets/img/logo/pngegg.png',
         ],
         'adviser' => [
             'name' => $adviserName,
@@ -637,6 +908,7 @@ function getSF9Data(PDO $conn): void {
         'quarters' => $quarters,
         'grades' => $gradeRows,
         'general_average' => $generalAverage,
+        'core_values' => sf9_observed_values_template(),
         'attendance' => [
             'months' => $attendanceMonths,
             'totals' => [
@@ -670,6 +942,8 @@ function getSF9DataByEnrollment(PDO $conn): void {
                 l.gender,
                 l.date_of_birth,
                 gl.grade_name,
+                l.mother_tongue,
+                el.level_name AS education_level_name,
                 sec.section_name,
                 sec.adviser_id,
                 sy.year_label,
@@ -678,6 +952,7 @@ function getSF9DataByEnrollment(PDO $conn): void {
          FROM enrollments e
          JOIN learners l ON l.learner_id = e.learner_id
          LEFT JOIN grade_levels gl ON gl.grade_level_id = e.grade_level_id
+         LEFT JOIN education_levels el ON el.education_level_id = gl.education_level_id
          LEFT JOIN sections sec ON sec.section_id = e.section_id
          LEFT JOIN school_years sy ON sy.school_year_id = e.school_year_id
          WHERE e.enrollment_id = :eid AND e.is_deleted = 0
@@ -709,6 +984,12 @@ function getSF9DataByEnrollment(PDO $conn): void {
     }
 
     $settings = getSchoolSettingsMap($conn);
+    $defaultLogoUrl = '/deped_capstone2/assets/img/logo/logo.jpg';
+    $curriculumLevel = sf9_infer_curriculum_level(
+        $settings['curriculum_level'] ?? null,
+        $h['education_level_name'] ?? null,
+        $h['grade_name'] ?? null
+    );
     $quarters = $schoolYearId > 0 ? getQuarterGradingPeriods($conn, $schoolYearId) : [
         ['quarter' => 1, 'grading_period_id' => 0, 'period_name' => ''],
         ['quarter' => 2, 'grading_period_id' => 0, 'period_name' => ''],
@@ -721,8 +1002,7 @@ function getSF9DataByEnrollment(PDO $conn): void {
         'SELECT co.class_id, s.subject_name, s.subject_code
          FROM class_offerings co
          JOIN subjects s ON s.subject_id = co.subject_id
-         WHERE co.is_deleted = 0
-           AND s.is_deleted = 0
+         WHERE s.is_deleted = 0
            AND co.section_id = :sid
            AND co.school_year_id = :sy
          ORDER BY s.subject_name'
@@ -733,16 +1013,21 @@ function getSF9DataByEnrollment(PDO $conn): void {
     $subjects = $sub->fetchAll(PDO::FETCH_ASSOC) ?: [];
     $classIds = array_values(array_filter(array_map(fn($r) => (int)($r['class_id'] ?? 0), $subjects), fn($id) => $id > 0));
 
-    $gradesByClass = [];
+    $gradesByClass = []; // [class_id][grading_period_id] = ['grade_id'=>..,'quarterly_grade'=>..]
     if ($enrollmentId > 0 && $classIds && $quarterIds) {
         $inClass = implode(',', array_fill(0, count($classIds), '?'));
         $inQ = implode(',', array_fill(0, count($quarterIds), '?'));
-        $sql = "SELECT class_id, grading_period_id, quarterly_grade
-                FROM grades
-                WHERE enrollment_id = ?
-                  AND is_deleted = 0
-                  AND class_id IN ({$inClass})
-                  AND grading_period_id IN ({$inQ})";
+        $sql = "SELECT g.grade_id, g.class_id, g.grading_period_id, g.quarterly_grade
+                FROM grades g
+                JOIN (
+                    SELECT class_id, grading_period_id, MAX(grade_id) AS latest_grade_id
+                    FROM grades
+                    WHERE enrollment_id = ?
+                      AND is_deleted = 0
+                      AND class_id IN ({$inClass})
+                      AND grading_period_id IN ({$inQ})
+                    GROUP BY class_id, grading_period_id
+                ) pick ON pick.latest_grade_id = g.grade_id";
         $g = $conn->prepare($sql);
         $i = 1;
         $g->bindValue($i++, $enrollmentId, PDO::PARAM_INT);
@@ -754,18 +1039,26 @@ function getSF9DataByEnrollment(PDO $conn): void {
             $qid = (int)($r['grading_period_id'] ?? 0);
             if ($cid <= 0 || $qid <= 0) continue;
             if (!isset($gradesByClass[$cid])) $gradesByClass[$cid] = [];
-            $gradesByClass[$cid][$qid] = $r['quarterly_grade'];
+            $gradesByClass[$cid][$qid] = [
+                'grade_id' => (int)($r['grade_id'] ?? 0),
+                'quarterly_grade' => $r['quarterly_grade'],
+            ];
         }
     }
 
-    $finalByClass = [];
+    $finalByClass = []; // [class_id] = ['final_grade_id'=>..,'final_grade'=>...,'remark'=>...]
     if ($enrollmentId > 0 && $classIds) {
         $inClass = implode(',', array_fill(0, count($classIds), '?'));
-        $sql = "SELECT class_id, final_grade, remark
-                FROM final_grades
-                WHERE enrollment_id = ?
-                  AND is_deleted = 0
-                  AND class_id IN ({$inClass})";
+        $sql = "SELECT fg.final_grade_id, fg.class_id, fg.final_grade, fg.remark
+                FROM final_grades fg
+                JOIN (
+                    SELECT class_id, MAX(final_grade_id) AS latest_final_grade_id
+                    FROM final_grades
+                    WHERE enrollment_id = ?
+                      AND is_deleted = 0
+                      AND class_id IN ({$inClass})
+                    GROUP BY class_id
+                ) pick ON pick.latest_final_grade_id = fg.final_grade_id";
         $fg = $conn->prepare($sql);
         $i = 1;
         $fg->bindValue($i++, $enrollmentId, PDO::PARAM_INT);
@@ -775,10 +1068,33 @@ function getSF9DataByEnrollment(PDO $conn): void {
             $cid = (int)($r['class_id'] ?? 0);
             if ($cid <= 0) continue;
             $finalByClass[$cid] = [
+                'final_grade_id' => (int)($r['final_grade_id'] ?? 0),
                 'final_grade' => $r['final_grade'],
                 'remark' => $r['remark'],
             ];
         }
+    }
+
+    // Deduplicate learning areas (some sections may have multiple class offerings per subject)
+    if ($subjects) {
+        $bucketed = [];
+        foreach ($subjects as $s) {
+            $key = sf9_subject_key($s['subject_code'] ?? null, $s['subject_name'] ?? null);
+            if (!isset($bucketed[$key])) $bucketed[$key] = [];
+            $bucketed[$key][] = $s;
+        }
+        $deduped = [];
+        foreach ($bucketed as $candidates) {
+            $best = sf9_pick_best_subject_row($candidates, $gradesByClass, $finalByClass, $quarters);
+            $best['_candidate_class_ids'] = array_values(array_filter(array_map(
+                fn($x) => (int)($x['class_id'] ?? 0),
+                $candidates
+            ), fn($id) => $id > 0));
+            $deduped[] = $best;
+        }
+        // Stable ordering by subject name after dedupe
+        usort($deduped, fn($a, $b) => strcmp((string)($a['subject_name'] ?? ''), (string)($b['subject_name'] ?? '')));
+        $subjects = $deduped;
     }
 
     $gradeRows = [];
@@ -788,28 +1104,50 @@ function getSF9DataByEnrollment(PDO $conn): void {
             'class_id' => $cid,
             'subject_name' => (string)($s['subject_name'] ?? ''),
             'subject_code' => $s['subject_code'] ?? null,
+            'category' => sf9_infer_subject_category((string)($s['subject_name'] ?? ''), $s['subject_code'] ?? null, $curriculumLevel),
             'q1' => null,
             'q2' => null,
             'q3' => null,
             'q4' => null,
             'final_grade' => null,
+            'final_rating' => null,
             'remark' => null,
+            'remarks' => null,
         ];
         if ($cid > 0) {
+            $candidateClassIds = $s['_candidate_class_ids'] ?? [$cid];
+            if (!is_array($candidateClassIds) || !$candidateClassIds) {
+                $candidateClassIds = [$cid];
+            }
             foreach ($quarters as $q) {
                 $qNo = (int)($q['quarter'] ?? 0);
                 $gpId = (int)($q['grading_period_id'] ?? 0);
                 if ($qNo >= 1 && $qNo <= 4 && $gpId > 0) {
-                    $row['q' . $qNo] = $gradesByClass[$cid][$gpId] ?? null;
+                    $row['q' . $qNo] = sf9_pick_latest_quarter_value($candidateClassIds, $gradesByClass, $gpId);
                 }
             }
-            if (isset($finalByClass[$cid])) {
-                $row['final_grade'] = $finalByClass[$cid]['final_grade'] ?? null;
-                $row['remark'] = $finalByClass[$cid]['remark'] ?? null;
-            }
+            $latestFinal = sf9_pick_latest_final_value($candidateClassIds, $finalByClass);
+            $row['final_grade'] = $latestFinal['final_grade'];
+            $row['remark'] = $latestFinal['remark'];
+        }
+        $computedFinal = $row['final_grade'];
+        if ($computedFinal === null || $computedFinal === '') {
+            $computedFinal = sf9_compute_average([$row['q1'], $row['q2'], $row['q3'], $row['q4']]);
+        } elseif (is_numeric($computedFinal)) {
+            $computedFinal = round((float)$computedFinal, 2);
+        }
+        $row['final_grade'] = $computedFinal;
+        $row['final_rating'] = $computedFinal;
+        if ($computedFinal !== null) {
+            $row['remark'] = $computedFinal >= 75 ? 'Passed' : 'Failed';
+            $row['remarks'] = $row['remark'];
         }
         $gradeRows[] = $row;
     }
+
+    // Remove rows that are completely empty (all quarters + final are blank).
+    // This avoids showing stale/legacy offerings with no encoded grades.
+    $gradeRows = array_values(array_filter($gradeRows, 'sf9_has_any_grade'));
 
     $gaStmt = $conn->prepare('SELECT general_average FROM general_averages WHERE enrollment_id = :eid AND is_deleted = 0 LIMIT 1');
     $gaStmt->bindValue(':eid', $enrollmentId, PDO::PARAM_INT);
@@ -926,9 +1264,11 @@ function getSF9DataByEnrollment(PDO $conn): void {
             'sex' => $h['gender'] ?? null,
             'date_of_birth' => $h['date_of_birth'] ?? null,
             'age' => $age,
+            'mother_tongue' => $h['mother_tongue'] ?? null,
         ],
         'enrollment' => [
             'grade_level' => $h['grade_name'] ?? null,
+            'education_level' => $h['education_level_name'] ?? null,
             'section' => $h['section_name'] ?? null,
             'school_year' => $h['year_label'] ?? null,
             'school_year_id' => $schoolYearId,
@@ -937,10 +1277,18 @@ function getSF9DataByEnrollment(PDO $conn): void {
         'school' => [
             'school_id' => $settings['school_id'] ?? ($settings['schoolId'] ?? null),
             'school_name' => $settings['school_name'] ?? ($settings['schoolName'] ?? null),
+            'name' => $settings['school_name'] ?? ($settings['schoolName'] ?? null),
             'region' => $settings['region'] ?? ($settings['school_region'] ?? null),
             'division' => $settings['division'] ?? ($settings['school_division'] ?? null),
             'district' => $settings['district'] ?? ($settings['school_district'] ?? null),
             'school_head' => $settings['school_head'] ?? ($settings['school_head_name'] ?? ($settings['principal_name'] ?? null)),
+            'principal_name' => $settings['principal_name'] ?? ($settings['school_head'] ?? ($settings['school_head_name'] ?? null)),
+            'principal_title' => $settings['principal_title'] ?? ($settings['school_head_title'] ?? 'Principal'),
+            // Fall back to project logo if none configured
+            'logo_url' => ($settings['logo_url'] ?? ($settings['school_logo_url'] ?? ($settings['deped_logo_url'] ?? null))) ?: $defaultLogoUrl,
+            'deped_logo_url' => $settings['deped_logo_url'] ?? '/deped_capstone2/assets/img/logo/pngegg.png',
+            'curriculum_level' => $curriculumLevel,
+            'track_strand' => $settings['track_strand'] ?? ($settings['school_track_strand'] ?? null),
         ],
         'adviser' => [
             'name' => $adviserName,
@@ -948,6 +1296,7 @@ function getSF9DataByEnrollment(PDO $conn): void {
         'quarters' => $quarters,
         'grades' => $gradeRows,
         'general_average' => $generalAverage,
+        'core_values' => sf9_observed_values_template(),
         'attendance' => [
             'months' => $attendanceMonths,
             'totals' => [

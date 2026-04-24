@@ -119,33 +119,8 @@
 
     <!-- Main Content -->
     <main class="main-content" id="mainContent">
-        <div class="rc-hero">
-            <div class="rc-breadcrumb">Dashboard / Academics / Report Cards</div>
-            <div class="rc-title">Student Grades &amp; Report Cards</div>
-            <div class="rc-sub">Select a section, choose a learner, then generate an SF9-ready report card.</div>
-
-            <div class="rc-hero-stats">
-                <div class="rc-stat">
-                    <div class="rc-stat-n" id="rcStatStudents">0</div>
-                    <div class="rc-stat-l">Students</div>
-                </div>
-                <div class="rc-stat">
-                    <div class="rc-stat-n" id="rcStatPass">0</div>
-                    <div class="rc-stat-l">Passing</div>
-                </div>
-                <div class="rc-stat">
-                    <div class="rc-stat-n" id="rcStatAtRisk">0</div>
-                    <div class="rc-stat-l">At Risk</div>
-                </div>
-                <div class="rc-stat">
-                    <div class="rc-stat-n" id="rcStatFail">0</div>
-                    <div class="rc-stat-l">Failing</div>
-                </div>
-                <div class="rc-stat">
-                    <div class="rc-stat-n" id="rcStatAvg">--</div>
-                    <div class="rc-stat-l">Class Avg</div>
-                </div>
-            </div>
+        <div class="rc-page-intro">
+            <h1 class="rc-page-title">Report card page</h1>
         </div>
 
         <div class="rc-controls">
@@ -182,10 +157,17 @@
                 <button class="modal-close" type="button" onclick="closeSf9Modal()">&times;</button>
             </div>
             <div class="modal-body" style="background:#fff;">
-                <div id="sf9PrintRoot" class="sf9-print-root"></div>
+                <iframe
+                    id="sf9Frame"
+                    title="SF9 Preview"
+                    style="width:100%; height:78vh; border:0; background:#fff;"
+                ></iframe>
             </div>
-            <div class="modal-footer">https://depedph.com/school-form-9-sf9/
+            <div class="modal-footer">
                 <button class="btn btn-outline" type="button" onclick="closeSf9Modal()">Close</button>
+                <button class="btn btn-outline" type="button" onclick="exportSf9Pdf()">
+                    <i class="fas fa-file-pdf"></i> Export PDF
+                </button>
                 <button class="btn btn-primary" type="button" onclick="printSf9()">
                     <i class="fas fa-print"></i> Print
                 </button>

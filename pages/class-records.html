@@ -32,6 +32,16 @@
         .cr-metric .s { font-size: 12px; color: var(--gray-600); margin-top: 2px; }
 
         .cr-grade-input { width: 84px; text-align: center; }
+        .cr-grade-input.cr-grade-invalid {
+            border: 2px solid #e74c3c !important;
+            background: #fdecea !important;
+            animation: cr-shake 0.3s ease;
+        }
+        @keyframes cr-shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-4px); }
+            75% { transform: translateX(4px); }
+        }
 
         /* Print: only show the print area */
         @media print {

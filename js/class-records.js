@@ -470,6 +470,58 @@ function renderRosterTable() {
     });
 
     tbody.querySelectorAll('input[data-field]').forEach((inp) => {
+        // Block non-numeric keystrokes (allow digits, one decimal point, navigation keys)
+        inp.addEventListener('keydown', (e) => {
+            const allowed = ['Backspace', 'Delete', 'Tab', 'Escape', 'Enter', 'ArrowLeft', 'ArrowRight', 'Home', 'End'];
+            if (allowed.includes(e.key)) return;
+            // Allow Ctrl/Cmd shortcuts (copy, paste, select-all, etc.)
+            if (e.ctrlKey || e.metaKey) return;
+            // Allow digits
+            if (/^\d$/.test(e.key)) return;
+            // Allow one decimal point only if there isn't one already
+            if (e.key === '.' && !inp.value.includes('.')) return;
+            // Block everything else (letters, symbols, e/E, etc.)
+            e.preventDefault();
+        });
+
+        // Sanitize pasted content — strip non-numeric chars except digits and decimal
+        inp.addEventListener('paste', (e) => {
+            e.preventDefault();
+            const raw = (e.clipboardData || window.clipboardData).getData('text') || '';
+            const cleaned = raw.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1');
+            // Clamp to 0–100 after paste
+            const num = Number(cleaned);
+            if (cleaned !== '' && !isNaN(num)) {
+                inp.value = Math.max(0, Math.min(100, num));
+            } else {
+                inp.value = cleaned;
+            }
+            inp.dispatchEvent(new Event('input', { bubbles: true }));
+        });
+
+        // Validate and clamp on blur
+        inp.addEventListener('blur', () => {
+            const raw = inp.value.trim();
+            if (raw === '') return;
+            const num = Number(raw);
+            const fieldLabel = inp.dataset.field === 'written_works' ? 'Written Works'
+                : inp.dataset.field === 'performance_tasks' ? 'Performance Tasks'
+                : 'Quarterly Exam';
+            if (isNaN(num) || raw.match(/[a-zA-Z]/)) {
+                inp.value = '';
+                inp.classList.add('cr-grade-invalid');
+                setTimeout(() => inp.classList.remove('cr-grade-invalid'), 1500);
+                toast('error', `${fieldLabel}: Invalid input — only numbers are allowed (0–100)`);
+            } else if (num < 0) {
+                inp.value = 0;
+                toast('error', `${fieldLabel}: Grade cannot be below 0 — value set to 0`);
+            } else if (num > 100) {
+                inp.value = 100;
+                toast('error', `${fieldLabel}: Grade cannot exceed 100 — value set to 100`);
+            }
+            inp.dispatchEvent(new Event('input', { bubbles: true }));
+        });
+
         inp.addEventListener('input', () => {
             const tr = inp.closest('tr');
             const enrollmentId = Number(tr?.dataset?.enrollmentId || 0);
@@ -477,8 +529,14 @@ function renderRosterTable() {
             if (!row) return;
 
             const field = inp.dataset.field;
-            const v = inp.value === '' ? null : Math.max(0, Math.min(100, Number(inp.value)));
-            row[field] = v;
+            const rawVal = inp.value;
+            // Reject NaN — treat as null instead of silently becoming 0
+            if (rawVal === '' || rawVal === null) {
+                row[field] = null;
+            } else {
+                const num = Number(rawVal);
+                row[field] = isNaN(num) ? null : Math.max(0, Math.min(100, num));
+            }
 
             const weights2 = state.classMeta?.weights || { WW: 0, PT: 0, QE: 0 };
             const ww2 = safeNum(row.written_works);

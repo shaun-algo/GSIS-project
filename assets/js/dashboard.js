@@ -265,10 +265,165 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeDashboard();
     initializeSessionBackGuard();
     initNotifications();
+    initAuditLogs();
     removeDeprecatedMasterfileLinks();
     ensureTopbarCenterNav();
     removeSettingsFromSidebar();
 });
+
+function initAuditLogs() {
+    const btn = document.getElementById('auditLogsBtn');
+    if (!btn) return;
+
+    // Wrap button in audit-menu container for dropdown anchoring
+    let wrapper = btn.closest('.audit-menu');
+    if (!wrapper) {
+        wrapper = document.createElement('div');
+        wrapper.className = 'audit-menu';
+        const parent = btn.parentNode;
+        if (!parent) return;
+        parent.insertBefore(wrapper, btn);
+        wrapper.appendChild(btn);
+    }
+
+    // Create dropdown element
+    let dropdown = wrapper.querySelector('.audit-dropdown');
+    if (!dropdown) {
+        dropdown = document.createElement('div');
+        dropdown.className = 'audit-dropdown';
+        dropdown.id = 'auditDropdown';
+        wrapper.appendChild(dropdown);
+    }
+
+    const close = () => dropdown.classList.remove('show');
+    const open = () => {
+        dropdown.classList.add('show');
+        refreshAuditLogs({ render: true });
+    };
+
+    btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (dropdown.classList.contains('show')) {
+            close();
+        } else {
+            open();
+        }
+    });
+
+    document.addEventListener('click', (e) => {
+        if (!wrapper.contains(e.target)) {
+            close();
+        }
+    });
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') close();
+    });
+
+    async function refreshAuditLogs({ render } = { render: false }) {
+        try {
+            const res = await axios.get(`${window.API_BASE}/audit_logs/audit_logs.php`, {
+                params: { operation: 'getAuditLogs', perPage: 15, page: 1, _: Date.now() }
+            });
+            if (!res.data?.success) throw new Error(res.data?.message || 'Failed to load audit logs');
+            const items = res.data.data || [];
+            const total = res.data.pagination?.totalRecords || 0;
+            if (render) {
+                renderAuditDropdown(dropdown, items, total);
+            }
+        } catch (err) {
+            const status = err?.response?.status;
+            if (status !== 401 && status !== 403) {
+                console.warn('Audit logs refresh failed:', err);
+            }
+            if (render) {
+                dropdown.innerHTML = `
+                    <div class="audit-dropdown-header">
+                        <span class="title"><i class="fas fa-clipboard-list"></i> Audit Logs</span>
+                    </div>
+                    <div class="audit-dropdown-empty">
+                        <i class="fas fa-exclamation-circle"></i>
+                        Unable to load audit logs
+                    </div>
+                `;
+            }
+        }
+    }
+
+    // Initial load (badge only, no render)
+    refreshAuditLogs({ render: false });
+    // Poll every 60s
+    window.setInterval(() => refreshAuditLogs({ render: false }), 60000);
+
+    window.refreshAuditLogs = refreshAuditLogs;
+}
+
+function renderAuditDropdown(dropdownEl, items, total) {
+    const header = `
+        <div class="audit-dropdown-header">
+            <span class="title"><i class="fas fa-clipboard-list"></i> Audit Logs</span>
+            <a href="${window.APP_BASE}/pages/audit-logs.html" class="view-all-link">View All <i class="fas fa-arrow-right"></i></a>
+        </div>
+    `;
+
+    if (!items || items.length === 0) {
+        dropdownEl.innerHTML = header + `
+            <div class="audit-dropdown-empty">
+                <i class="fas fa-clipboard-list"></i>
+                No audit logs recorded yet
+            </div>
+        `;
+        return;
+    }
+
+    dropdownEl.innerHTML = header;
+
+    items.forEach((log) => {
+        const actionKey = (log.action || '').toLowerCase();
+        const iconClass = actionKey === 'insert' ? 'fa-plus' : actionKey === 'delete' ? 'fa-trash' : 'fa-pen';
+        const user = auditEscapeHtml(log.username || 'System');
+        const table = auditEscapeHtml(log.table_name || '');
+        const recordId = log.record_id != null ? `#${log.record_id}` : '';
+        const when = auditFormatTime(log.action_time);
+
+        const item = document.createElement('div');
+        item.className = 'audit-log-item';
+        item.innerHTML = `
+            <div class="audit-log-icon ${actionKey}"><i class="fas ${iconClass}"></i></div>
+            <div class="audit-log-body">
+                <p class="audit-action-line"><strong>${user}</strong> ${auditEscapeHtml(log.action)} on <code>${table}</code> ${recordId}</p>
+                <div class="audit-time">${when}</div>
+            </div>
+        `;
+
+        item.addEventListener('click', () => {
+            window.location.href = `${window.APP_BASE}/pages/audit-logs.html`;
+        });
+
+        dropdownEl.appendChild(item);
+    });
+}
+
+function auditEscapeHtml(str) {
+    const div = document.createElement('div');
+    div.textContent = String(str ?? '');
+    return div.innerHTML;
+}
+
+function auditFormatTime(dateStr) {
+    if (!dateStr) return '';
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return dateStr;
+    const now = new Date();
+    const diffMs = now - d;
+    const diffMin = Math.floor(diffMs / 60000);
+    if (diffMin < 1) return 'Just now';
+    if (diffMin < 60) return `${diffMin}m ago`;
+    const diffHr = Math.floor(diffMin / 60);
+    if (diffHr < 24) return `${diffHr}h ago`;
+    return d.toLocaleDateString('en-PH', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+}
 
 function initNotifications() {
     const btn = document.getElementById('notificationBtn');

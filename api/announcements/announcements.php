@@ -10,6 +10,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') { exit(0); }
 require_once __DIR__ . '/../database/connection.php';
 require_once __DIR__ . '/../utils/auth.php';
 require_once __DIR__ . '/../utils/notifications.php';
+require_once __DIR__ . '/../utils/audit.php';
 
 function respond($payload, int $code = 200): void {
     http_response_code($code);
@@ -219,6 +220,14 @@ function createAnnouncement(PDO $conn): void {
 
     $announcementId = $conn->lastInsertId();
 
+    // Audit log
+    audit_log($conn, 'announcements', (int)$announcementId, 'INSERT', null, [
+        'announcement_id' => (int)$announcementId,
+        'title' => $data['title'],
+        'target_role_id' => $targetRoleId,
+        'is_pinned' => $data['is_pinned'] ?? 0,
+    ]);
+
     // Create in-app notifications for recipients.
     try {
         $title = (string)$data['title'];
@@ -319,6 +328,14 @@ function updateAnnouncement(PDO $conn): void {
     $stmt->bindValue(':announcement_id', $data['announcement_id'], PDO::PARAM_INT);
     $stmt->execute();
 
+    // Audit log
+    $oldRow = audit_fetch_old($conn, 'announcements', 'announcement_id', (int)$data['announcement_id']);
+    audit_log($conn, 'announcements', (int)$data['announcement_id'], 'UPDATE', $oldRow, [
+        'title' => $data['title'],
+        'target_role_id' => $targetRoleId,
+        'is_pinned' => $data['is_pinned'] ?? 0,
+    ]);
+
     respond(['success' => true, 'message' => 'Announcement updated.']);
 }
 
@@ -333,6 +350,11 @@ function deleteAnnouncement(PDO $conn): void {
     $stmt = $conn->prepare('UPDATE announcements SET is_deleted = 1, deleted_at = NOW() WHERE announcement_id = :announcement_id');
     $stmt->bindValue(':announcement_id', $data['announcement_id'], PDO::PARAM_INT);
     $stmt->execute();
+
+    // Audit log
+    audit_log($conn, 'announcements', (int)$data['announcement_id'], 'DELETE',
+        audit_fetch_old($conn, 'announcements', 'announcement_id', (int)$data['announcement_id']), null);
+
     respond(['success' => true, 'message' => 'Announcement deleted.']);
 }
 

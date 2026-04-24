@@ -22,6 +22,24 @@ function getJsonInput(): array {
     return $raw ? (json_decode($raw, true) ?: []) : [];
 }
 
+/**
+ * Sanitize a grade component value.
+ * Returns null for blank/null, float for valid numbers 0–100,
+ * or throws for non-numeric strings / out-of-range.
+ */
+function sanitizeGradeValue($raw, string $label): ?float {
+    if ($raw === null || $raw === '') return null;
+    // Reject non-numeric strings (e.g. "abc", "50abc") before PHP silently casts them to 0
+    if (is_string($raw) && !is_numeric($raw)) {
+        respond(['success' => false, 'message' => "{$label} must be a number between 0 and 100"], 422);
+    }
+    $val = (float)$raw;
+    if ($val < 0 || $val > 100) {
+        respond(['success' => false, 'message' => "{$label} must be between 0 and 100"], 422);
+    }
+    return $val;
+}
+
 function getEmployeeIdForUser(PDO $conn, int $userId): int {
     if ($userId <= 0) {
         respond(['success' => false, 'message' => 'Invalid session user'], 401);
@@ -265,21 +283,9 @@ function createGrade(PDO $conn, array $session): void {
 
     requireEnrollmentMatchesClassOffering($conn, $enrollmentId, $classId);
 
-    $ww = array_key_exists('written_works', $data) ? $data['written_works'] : null;
-    $pt = array_key_exists('performance_tasks', $data) ? $data['performance_tasks'] : null;
-    $qe = array_key_exists('quarterly_exam', $data) ? $data['quarterly_exam'] : null;
-
-    $ww = ($ww === '' || $ww === null) ? null : (float)$ww;
-    $pt = ($pt === '' || $pt === null) ? null : (float)$pt;
-    $qe = ($qe === '' || $qe === null) ? null : (float)$qe;
-
-    foreach ([['written_works', $ww], ['performance_tasks', $pt], ['quarterly_exam', $qe]] as $pair) {
-        [$label, $val] = $pair;
-        if ($val === null) continue;
-        if ($val < 0 || $val > 100) {
-            respond(['success' => false, 'message' => "{$label} must be between 0 and 100"], 422);
-        }
-    }
+    $ww = sanitizeGradeValue(array_key_exists('written_works', $data) ? $data['written_works'] : null, 'written_works');
+    $pt = sanitizeGradeValue(array_key_exists('performance_tasks', $data) ? $data['performance_tasks'] : null, 'performance_tasks');
+    $qe = sanitizeGradeValue(array_key_exists('quarterly_exam', $data) ? $data['quarterly_exam'] : null, 'quarterly_exam');
 
     $computed = computeGradeValues($conn, $enrollmentId, $ww, $pt, $qe);
     $hasInitial = gradesHasInitialGrade($conn);
@@ -334,21 +340,9 @@ function updateGrade(PDO $conn, array $session): void {
 
     requireEnrollmentMatchesClassOffering($conn, $enrollmentId, $classId);
 
-    $ww = array_key_exists('written_works', $data) ? $data['written_works'] : null;
-    $pt = array_key_exists('performance_tasks', $data) ? $data['performance_tasks'] : null;
-    $qe = array_key_exists('quarterly_exam', $data) ? $data['quarterly_exam'] : null;
-
-    $ww = ($ww === '' || $ww === null) ? null : (float)$ww;
-    $pt = ($pt === '' || $pt === null) ? null : (float)$pt;
-    $qe = ($qe === '' || $qe === null) ? null : (float)$qe;
-
-    foreach ([['written_works', $ww], ['performance_tasks', $pt], ['quarterly_exam', $qe]] as $pair) {
-        [$label, $val] = $pair;
-        if ($val === null) continue;
-        if ($val < 0 || $val > 100) {
-            respond(['success' => false, 'message' => "{$label} must be between 0 and 100"], 422);
-        }
-    }
+    $ww = sanitizeGradeValue(array_key_exists('written_works', $data) ? $data['written_works'] : null, 'written_works');
+    $pt = sanitizeGradeValue(array_key_exists('performance_tasks', $data) ? $data['performance_tasks'] : null, 'performance_tasks');
+    $qe = sanitizeGradeValue(array_key_exists('quarterly_exam', $data) ? $data['quarterly_exam'] : null, 'quarterly_exam');
 
     $computed = computeGradeValues($conn, $enrollmentId, $ww, $pt, $qe);
     $hasInitial = gradesHasInitialGrade($conn);

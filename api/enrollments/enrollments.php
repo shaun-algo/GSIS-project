@@ -8,6 +8,7 @@ require_once __DIR__ . '/../database/connection.php';
 
 require_once __DIR__ . '/../utils/auth.php';
 require_once __DIR__ . '/../utils/notifications.php';
+require_once __DIR__ . '/../utils/audit.php';
 
 function getLearnerRoleId(PDO $conn): int {
     // Prefer lookup by name to avoid hard-coding, but keep a safe fallback.
@@ -329,7 +330,7 @@ function createEnrollment(PDO $conn): void {
     try {
         $conn->beginTransaction();
 
-        // promotion_status was removed from the schema; tolerate legacy payloads by ignoring it.
+        // promotion_status was removed from the schema; tolerat=e legacy payloads by ignoring it.
         $stmt = $conn->prepare('INSERT INTO enrollments (learner_id, school_year_id, grade_level_id, section_id, enrollment_type_id, curriculum_id, enrollment_date, enrollment_status) VALUES (:learner_id, :school_year_id, :grade_level_id, :section_id, :enrollment_type_id, :curriculum_id, :enrollment_date, :enrollment_status)');
         $stmt->bindValue(':learner_id', $data['learner_id'], PDO::PARAM_INT);
         $stmt->bindValue(':school_year_id', $schoolYearId, PDO::PARAM_INT);
@@ -348,6 +349,16 @@ function createEnrollment(PDO $conn): void {
 
         // Auto-create/link learner login account.
         $account = ensureLearnerUserAccount($conn, (int)$data['learner_id']);
+
+        // Audit log (inside transaction so it rolls back on error)
+        audit_log($conn, 'enrollments', $enrollmentId, 'INSERT', null, [
+            'enrollment_id' => $enrollmentId,
+            'learner_id' => (int)$data['learner_id'],
+            'school_year_id' => $schoolYearId,
+            'grade_level_id' => $gradeLevelId,
+            'section_id' => $sectionId,
+            'enrollment_status' => $enrollmentStatus,
+        ]);
 
         $conn->commit();
     } catch (PDOException $e) {
@@ -490,6 +501,16 @@ function updateEnrollment(PDO $conn): void {
         }
         $stmt->bindValue(':enrollment_id', $data['enrollment_id'], PDO::PARAM_INT);
         $stmt->execute();
+
+        $oldRow = audit_fetch_old($conn, 'enrollments', 'enrollment_id', (int)$data['enrollment_id']);
+        audit_log($conn, 'enrollments', (int)$data['enrollment_id'], 'UPDATE', $oldRow, [
+            'enrollment_id' => (int)$data['enrollment_id'],
+            'learner_id' => (int)$data['learner_id'],
+            'school_year_id' => $schoolYearId,
+            'grade_level_id' => $gradeLevelId,
+            'section_id' => $sectionId,
+        ]);
+
         respond(['success' => true, 'message' => 'Enrollment updated']);
     } catch (PDOException $e) {
         if ((string)$e->getCode() === '45000') {
@@ -507,6 +528,10 @@ function deleteEnrollment(PDO $conn): void {
     $stmt = $conn->prepare('UPDATE enrollments SET is_deleted = 1, deleted_at = NOW() WHERE enrollment_id = :enrollment_id');
     $stmt->bindValue(':enrollment_id', $data['enrollment_id'], PDO::PARAM_INT);
     $stmt->execute();
+
+    $oldRow = audit_fetch_old($conn, 'enrollments', 'enrollment_id', (int)$data['enrollment_id']);
+    audit_log($conn, 'enrollments', (int)$data['enrollment_id'], 'DELETE', $oldRow, null);
+
     respond(['success' => true, 'message' => 'Enrollment deleted']);
 }
 ?>

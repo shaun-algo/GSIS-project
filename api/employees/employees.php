@@ -12,6 +12,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 require_once __DIR__ . '/../database/connection.php';
 
 require_once __DIR__ . '/../utils/auth.php';
+require_once __DIR__ . '/../utils/audit.php';
 
 function requireAuth(): int {
     $session = auth_require();
@@ -214,6 +215,13 @@ function createEmployee(PDO $conn): void {
         $employeeId = $conn->lastInsertId();
         $conn->commit();
 
+        audit_log($conn, 'employees', (int)$employeeId, 'INSERT', null, [
+            'employee_id' => (int)$employeeId,
+            'employee_number' => $employeeNumber,
+            'first_name' => $data['first_name'],
+            'last_name' => $data['last_name'],
+        ]);
+
         respond(['success' => true, 'message' => 'Employee created', 'employee_id' => $employeeId, 'user_id' => $userId]);
     } catch (Throwable $e) {
         if ($conn->inTransaction()) {
@@ -265,6 +273,14 @@ function updateEmployee(PDO $conn): void {
     $stmt->bindValue(':date_hired', normalizeInput($data['date_hired'] ?? null));
     $stmt->bindValue(':employee_id', $data['employee_id'], PDO::PARAM_INT);
     $stmt->execute();
+
+    $oldRow = audit_fetch_old($conn, 'employees', 'employee_id', (int)$data['employee_id']);
+    audit_log($conn, 'employees', (int)$data['employee_id'], 'UPDATE', $oldRow, [
+        'employee_id' => (int)$data['employee_id'],
+        'employee_number' => $employeeNumber,
+        'first_name' => $data['first_name'],
+        'last_name' => $data['last_name'],
+    ]);
 
     if ($userId) {
         $stmtUser = $conn->prepare('UPDATE users SET username = :username, role_id = COALESCE(:role_id, role_id) WHERE user_id = :user_id');
@@ -333,6 +349,9 @@ function deleteEmployee(PDO $conn): void {
     $stmt = $conn->prepare('UPDATE employees SET is_deleted = 1, deleted_at = NOW() WHERE employee_id = :employee_id');
     $stmt->bindValue(':employee_id', $data['employee_id'], PDO::PARAM_INT);
     $stmt->execute();
+
+    $oldRow = audit_fetch_old($conn, 'employees', 'employee_id', (int)$data['employee_id']);
+    audit_log($conn, 'employees', (int)$data['employee_id'], 'DELETE', $oldRow, null);
 
     respond(['success' => true, 'message' => 'Employee deleted']);
 }

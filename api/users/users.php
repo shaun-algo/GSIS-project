@@ -12,6 +12,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 require_once __DIR__ . '/../database/connection.php';
 
 require_once __DIR__ . '/../utils/auth.php';
+require_once __DIR__ . '/../utils/audit.php';
 
 function respond($payload, int $code = 200): void {
     http_response_code($code);
@@ -88,7 +89,10 @@ function createUser(PDO $conn): void {
     $stmt->bindValue(':is_active', $isActive, PDO::PARAM_INT);
     $stmt->execute();
 
-    respond(['success' => true, 'message' => 'User created', 'user_id' => $conn->lastInsertId()]);
+    $newUserId = (int)$conn->lastInsertId();
+    audit_log($conn, 'users', $newUserId, 'INSERT', null, ['user_id' => $newUserId, 'username' => $data['username'], 'role_id' => $data['role_id']]);
+
+    respond(['success' => true, 'message' => 'User created', 'user_id' => $newUserId]);
 }
 
 function updateUser(PDO $conn): void {
@@ -120,6 +124,9 @@ function updateUser(PDO $conn): void {
     }
     $stmt->execute();
 
+    $oldRow = audit_fetch_old($conn, 'users', 'user_id', (int)$data['user_id']);
+    audit_log($conn, 'users', (int)$data['user_id'], 'UPDATE', $oldRow, ['user_id' => (int)$data['user_id'], 'username' => $data['username'], 'role_id' => $data['role_id'], 'is_active' => $isActive]);
+
     respond(['success' => true, 'message' => 'User updated']);
 }
 
@@ -132,6 +139,9 @@ function deleteUser(PDO $conn): void {
     $stmt = $conn->prepare('UPDATE users SET is_deleted = 1, deleted_at = NOW() WHERE user_id = :user_id');
     $stmt->bindValue(':user_id', $data['user_id'], PDO::PARAM_INT);
     $stmt->execute();
+
+    $oldRow = audit_fetch_old($conn, 'users', 'user_id', (int)$data['user_id']);
+    audit_log($conn, 'users', (int)$data['user_id'], 'DELETE', $oldRow, null);
 
     respond(['success' => true, 'message' => 'User deleted']);
 }

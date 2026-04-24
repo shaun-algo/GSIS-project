@@ -1,58 +1,15 @@
 /* Report Cards (Student list UI) */
 
-.rc-hero {
-    background: linear-gradient(135deg, var(--deped-blue) 0%, var(--deped-blue-dark) 70%);
-    color: #fff;
-    border-radius: 0.75rem;
-    padding: 1.25rem 1.25rem 0;
-    box-shadow: var(--shadow);
+.rc-page-intro {
+    margin-bottom: 0.25rem;
 }
 
-.rc-breadcrumb {
-    font-size: 0.8rem;
-    color: rgba(255, 255, 255, 0.7);
-}
-
-.rc-title {
-    margin-top: 0.35rem;
-    font-size: 1.55rem;
-    font-weight: 800;
-}
-
-.rc-sub {
-    margin-top: 0.25rem;
-    font-size: 0.9rem;
-    color: rgba(255, 255, 255, 0.75);
-}
-
-.rc-hero-stats {
-    margin-top: 1rem;
-    display: grid;
-    grid-template-columns: repeat(5, minmax(120px, 1fr));
-    border-top: 1px solid rgba(255, 255, 255, 0.18);
-}
-
-.rc-stat {
-    padding: 0.9rem 0.9rem;
-    border-right: 1px solid rgba(255, 255, 255, 0.12);
-}
-
-.rc-stat:last-child {
-    border-right: none;
-}
-
-.rc-stat-n {
+.rc-page-title {
+    margin: 0;
     font-size: 1.35rem;
     font-weight: 800;
-    line-height: 1;
-}
-
-.rc-stat-l {
-    margin-top: 0.25rem;
-    font-size: 0.7rem;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    color: rgba(255, 255, 255, 0.65);
+    color: var(--gray-900);
+    letter-spacing: -0.02em;
 }
 
 .rc-controls {
@@ -111,7 +68,7 @@
 }
 
 .rc-student-items {
-    max-height: calc(100vh - 310px);
+    max-height: calc(100vh - 240px);
     overflow: auto;
 }
 
@@ -344,6 +301,15 @@
     flex-wrap: wrap;
 }
 
+.rc-student-section {
+    margin-top: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--gray-700);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+
 .rc-student-actions {
     display: flex;
     gap: 8px;
@@ -369,41 +335,6 @@
     text-align: center;
     color: #991B1B;
     font-size: 0.9rem;
-}
-
-.rc-stats-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-    gap: 10px;
-    margin: 1.25rem 0;
-}
-
-.rc-stat-card {
-    background: var(--surface-0);
-    border: 1px solid var(--gray-200);
-    border-radius: 0.5rem;
-    padding: 14px 16px;
-    text-align: center;
-}
-
-.rc-stat-label {
-    font-size: 11px;
-    color: var(--gray-500);
-    margin-bottom: 4px;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-}
-
-.rc-stat-value {
-    font-size: 22px;
-    font-weight: 700;
-    line-height: 1;
-}
-
-.rc-stat-desc {
-    font-size: 11px;
-    margin-top: 3px;
-    color: var(--gray-500);
 }
 
 .rc-grades-section {
@@ -460,6 +391,52 @@
     background: var(--gray-50);
 }
 
+.rc-grades-table tr.grade-row-pass td,
+.rc-grades-table tr.grade-row-fail td {
+    font-weight: 700;
+}
+
+.rc-grades-table tr.grade-row-pass {
+    box-shadow: inset 0 0 0 2px #16A34A;
+    border-radius: 10px;
+}
+
+.rc-grades-table tr.grade-row-pass:hover td {
+    background: #ECFDF5;
+}
+
+.rc-grades-table tr.grade-row-fail {
+    box-shadow: inset 0 0 0 2px #DC2626;
+    border-radius: 10px;
+}
+
+.rc-grades-table tr.grade-row-fail:hover td {
+    background: #FEF2F2;
+}
+
+.rc-grades-table tr.grade-row-pass-partial td,
+.rc-grades-table tr.grade-row-fail-partial td {
+    font-weight: 700;
+}
+
+.rc-grades-table tr.grade-row-pass-partial {
+    box-shadow: inset 0 0 0 2px rgba(22, 163, 74, 0.55);
+    border-radius: 10px;
+}
+
+.rc-grades-table tr.grade-row-pass-partial:hover td {
+    background: #F0FDF4;
+}
+
+.rc-grades-table tr.grade-row-fail-partial {
+    box-shadow: inset 0 0 0 2px rgba(220, 38, 38, 0.55);
+    border-radius: 10px;
+}
+
+.rc-grades-table tr.grade-row-fail-partial:hover td {
+    background: #FFF1F2;
+}
+
 .subject-name {
     font-weight: 500;
 }
@@ -469,6 +446,24 @@
     font-family: monospace;
     font-size: 13px;
     font-weight: 500;
+}
+
+.grade-cell .grade-text {
+    font-family: inherit;
+    font-weight: 700;
+}
+
+.grade-cell .grade-text-pass {
+    color: #16A34A;
+}
+
+.grade-cell .grade-text-fail {
+    color: #DC2626;
+}
+
+.grade-cell .grade-text-empty {
+    color: var(--gray-400);
+    font-weight: 600;
 }
 
 .grade-cell.final {
@@ -501,9 +496,6 @@
 .gwa-fairly-satisfactory { color: #B45309; }
 .gwa-did-not-meet { color: #991B1B; }
 
-.status-pass { color: #065F46; }
-.status-fail { color: #991B1B; }
-
 /* Avatar color classes */
 .av-blue { background: #DBEAFE; color: #1E40AF; }
 .av-green { background: #DCFCE7; color: #166534; }
@@ -513,16 +505,10 @@
 .av-teal { background: #CCFBF1; color: #0F766E; }
 
 @media (max-width: 1100px) {
-    .rc-hero-stats {
-        grid-template-columns: repeat(2, minmax(140px, 1fr));
-    }
     .rc-main {
         grid-template-columns: 1fr;
     }
     .rc-student-items {
         max-height: 320px;
-    }
-    .rc-stats-grid {
-        grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
     }
 }

@@ -13,6 +13,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 require_once __DIR__ . '/../database/connection.php';
 
 require_once __DIR__ . '/../utils/auth.php';
+require_once __DIR__ . '/../utils/audit.php';
 
 function respond($payload, int $code = 200): void {
     http_response_code($code);
@@ -214,7 +215,15 @@ function createSection(PDO $conn): void {
     $stmt->bindValue(':max_capacity', $maxCapacity, PDO::PARAM_INT);
     $stmt->execute();
 
-    respond(['success' => true, 'message' => 'Section created', 'section_id' => $conn->lastInsertId()]);
+    $sectionId = (int)$conn->lastInsertId();
+    audit_log($conn, 'sections', $sectionId, 'INSERT', null, [
+        'section_id' => $sectionId,
+        'section_name' => $data['section_name'],
+        'grade_level_id' => (int)$data['grade_level_id'],
+        'school_year_id' => (int)$data['school_year_id'],
+    ]);
+
+    respond(['success' => true, 'message' => 'Section created', 'section_id' => $sectionId]);
 }
 
 function updateSection(PDO $conn): void {
@@ -253,6 +262,13 @@ function updateSection(PDO $conn): void {
     $stmt->bindValue(':section_id', $data['section_id'], PDO::PARAM_INT);
     $stmt->execute();
 
+    $oldRow = audit_fetch_old($conn, 'sections', 'section_id', (int)$data['section_id']);
+    audit_log($conn, 'sections', (int)$data['section_id'], 'UPDATE', $oldRow, [
+        'section_id' => (int)$data['section_id'],
+        'section_name' => $data['section_name'],
+        'grade_level_id' => (int)$data['grade_level_id'],
+    ]);
+
     respond(['success' => true, 'message' => 'Section updated']);
 }
 
@@ -265,6 +281,9 @@ function deleteSection(PDO $conn): void {
     $stmt = $conn->prepare('UPDATE sections SET is_deleted = 1, deleted_at = NOW() WHERE section_id = :section_id');
     $stmt->bindValue(':section_id', $data['section_id'], PDO::PARAM_INT);
     $stmt->execute();
+
+    $oldRow = audit_fetch_old($conn, 'sections', 'section_id', (int)$data['section_id']);
+    audit_log($conn, 'sections', (int)$data['section_id'], 'DELETE', $oldRow, null);
 
     respond(['success' => true, 'message' => 'Section deleted']);
 }

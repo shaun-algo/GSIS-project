@@ -12,6 +12,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 require_once __DIR__ . '/../database/connection.php';
 
 require_once __DIR__ . '/../utils/auth.php';
+require_once __DIR__ . '/../utils/audit.php';
 
 function respond($payload, int $code = 200): void {
     http_response_code($code);
@@ -74,6 +75,9 @@ function createRole(PDO $conn): void {
     $stmt->bindValue(':role_name', $data['role_name']);
     $stmt->execute();
 
+    $roleId = (int)$conn->lastInsertId();
+    audit_log($conn, 'roles', $roleId, 'INSERT', null, ['role_id' => $roleId, 'role_name' => $data['role_name']]);
+
     respond(['success' => true, 'message' => 'Role created', 'role_id' => $conn->lastInsertId()]);
 }
 
@@ -88,6 +92,9 @@ function updateRole(PDO $conn): void {
     $stmt->bindValue(':role_id', $data['role_id'], PDO::PARAM_INT);
     $stmt->execute();
 
+    $oldRow = audit_fetch_old($conn, 'roles', 'role_id', (int)$data['role_id']);
+    audit_log($conn, 'roles', (int)$data['role_id'], 'UPDATE', $oldRow, ['role_id' => (int)$data['role_id'], 'role_name' => $data['role_name']]);
+
     respond(['success' => true, 'message' => 'Role updated']);
 }
 
@@ -100,6 +107,9 @@ function deleteRole(PDO $conn): void {
     $stmt = $conn->prepare('UPDATE roles SET is_deleted = 1, deleted_at = NOW() WHERE role_id = :role_id');
     $stmt->bindValue(':role_id', $data['role_id'], PDO::PARAM_INT);
     $stmt->execute();
+
+    $oldRow = audit_fetch_old($conn, 'roles', 'role_id', (int)$data['role_id']);
+    audit_log($conn, 'roles', (int)$data['role_id'], 'DELETE', $oldRow, null);
 
     respond(['success' => true, 'message' => 'Role deleted']);
 }
